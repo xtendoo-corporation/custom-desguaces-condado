@@ -1,0 +1,75 @@
+<odoo>
+    <data>
+          <!-- Acción del servidor para recuperar cambios de Metasync -->
+        <record id="recuperar_cambios_almacen_metasync" model="ir.actions.server">
+            <field name="name">Recuperar Cambios Metasync</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['stock.picking'].recuperar_cambios_almacen_metasync()
+            </field>
+        </record>
+
+        <!-- Acción del servidor para recuperar cambios de Metasync -->
+        <record id="recuperar_cambios_almacen_empresa_metasync" model="ir.actions.server">
+            <field name="name">Recuperar Cambios Metasync</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['stock.picking'].recuperar_cambios_almacen_empresa_metasync()
+            </field>
+        </record>
+
+          <!-- Acción del servidor para recuperar cambios de Metasync -->
+        <record id="recuperar_cambios_vehiculos_metasync" model="ir.actions.server">
+            <field name="name">Recuperar Cambios Metasync</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['stock.picking'].recuperar_cambios_vehiculos_metasync()
+            </field>
+        </record>
+
+          <!-- Acción del servidor para recuperar cambios de Metasync -->
+        <record id="recuperar_cambios_vehiculos_empresa_metasync" model="ir.actions.server">
+            <field name="name">Recuperar Cambios Metasync</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['stock.picking'].recuperar_cambios_vehiculos_empresa_metasync()
+            </field>
+        </record>
+
+        <!-- Menú en Inventario para la acción -->
+        <menuitem id="metasync_api_menu"
+                  name="Metasync API"
+                  parent="stock.menu_stock_inventory_control"
+                  sequence="10"/>
+
+         <!-- Submenú para recuperar cambios de Metasync -->
+        <menuitem id="metasync_recuperar_canal_cambios_menu"
+                  name="Recuperar Cambios Canal"
+                  parent="metasync_api_menu"
+                  action="recuperar_cambios_almacen_metasync"
+                  sequence="10"/>
+
+        <!-- Submenú para recuperar cambios de Metasync -->
+        <menuitem id="metasync_recuperar_canal_empresa_cambios_menu"
+                  name="Recuperar Cambios Canal Empresa"
+                  parent="metasync_api_menu"
+                  action="recuperar_cambios_almacen_empresa_metasync"
+                  sequence="20"/>
+
+        <menuitem id="metasync_recuperar_cambios_vehiculos_menu"
+                  name="Recuperar Cambios Vehiculos"
+                  parent="metasync_api_menu"
+                  action="recuperar_cambios_vehiculos_metasync"
+                  sequence="30"/>
+
+        <menuitem id="metasync_recuperar_cambios_vehiculos_empresa_menu"
+                  name="Recuperar Cambios Vehiculos Empresa"
+                  parent="metasync_api_menu"
+                  action="recuperar_cambios_vehiculos_empresa_metasync"
+                  sequence="40"/>
+    </data>
+</odoo>
