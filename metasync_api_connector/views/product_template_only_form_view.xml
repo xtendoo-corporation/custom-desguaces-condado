@@ -1,0 +1,34 @@
+<odoo>
+    <data>
+        <!-- Heredar la vista product.product_template_only_form_view -->
+        <record id="view_product_template_only_form_inherit" model="ir.ui.view">
+            <field name="name">product.template.only.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <!-- Aquí puedes añadir o modificar campos en la vista -->
+                <xpath expr="//page[@name='general_information']" position="after">
+                    <page name="More Information" string="Más información">
+                        <group>
+                            <group>
+                                <field name="principal_ref" string="Referencia Principal"/>
+                                <field name="vehicle_id" string="ID Vehículo"/>
+                                <field name="version_code" string="Código Versión"/>
+                                <field name="article_code" string="Referencia Principal"/>
+                                <field name="stock_year" string="Año stock"/>
+                            </group>
+                            <group>
+                                <field name="location" string="Localización"/>
+                                <field name="observations" string="Observaciones"/>
+                                <field name="reserve" string="Reserva"/>
+                                <field name="material_type" string="Tipo Material"/>
+                                <field name="modification_date" string="Fecha Modificación"/>
+                                <field name="cod_almacen" string="Código Almacén"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -11,7 +11,9 @@
     'data': [
         'views/stock_picking_metasync_api_menu.xml',
         'views/product_category_views.xml',
+        'views/product_template_only_form_view.xml',
     ],
     'installable': True,
     'application': False,
+    'license': 'LGPL-3',
 }
