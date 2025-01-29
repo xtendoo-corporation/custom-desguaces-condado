@@ -17,6 +17,7 @@ class StockPicking(models.Model):
                 "Por favor, configure los parámetros 'metasync.inventory.apikey' y 'metasync.id_empresa' en Ajustes > Parámetros > Parámetros del sistema.")
         return api_key, idempresa
 
+
     def obtener_parametros_metasync(self):
         config = self.env['ir.config_parameter'].sudo()
         api_key = config.get_param('metasync.inventory.apikey', default=None)
@@ -24,6 +25,14 @@ class StockPicking(models.Model):
             raise UserError(
                 "Por favor, configure los parámetros 'metasync.inventory.apikey'  en Ajustes > Parámetros > Parámetros del sistema.")
         return api_key
+
+    # def obtener_parametros_vehiculos_metasync(self):
+    #     config = self.env['ir.config_parameter'].sudo()
+    #     api_key = config.get_param('metasync.inventory.vehiculos.apikey', default=None)
+    #     if not api_key:
+    #         raise UserError(
+    #             "Por favor, configure los parámetros 'metasync.inventory.apikey'  en Ajustes > Parámetros > Parámetros del sistema.")
+    #     return api_key
 
     @api.model
     def recuperar_cambios_almacen_metasync(self):
@@ -352,7 +361,6 @@ class StockPicking(models.Model):
         fecha = '20/12/2023 21:29:56'
         lastid = "0"
         offset = "50"
-
         headers = {
             'apiKey': api_key,
             'fecha': fecha,
@@ -361,10 +369,10 @@ class StockPicking(models.Model):
         }
 
         try:
-            response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal',
-                                    headers=headers)
+            response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal', headers=headers)
             response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            # Acceder a las piezas
+            print("Respuesta completa:", response.json())
+            # Acceder a los vehiculos
             print("/" * 80)
             if len(response.json()['vehiculos']) == 0:
                 print("No hay vehículos")
@@ -415,3 +423,41 @@ class StockPicking(models.Model):
 
         except requests.exceptions.RequestException as e:
             raise UserError(f"Error al realizar la solicitud: {e}")
+
+    @api.model
+    def recuperar_conteo_de_piezas_metasync(self):
+        api_key = self.obtener_parametros_metasync()
+        fecha = '20/12/2023 21:29:56'
+
+        headers = {
+            'apiKey': api_key,
+            'fecha': fecha
+        }
+
+        try:
+            response = requests.get('https://apis.metasync.com/Almacen/ConteoPiezas', headers=headers)
+            response.raise_for_status()  # Lanza un error si la respuesta no es 200
+            print("Total piezas: ",response.json())
+        except requests.exceptions.RequestException as e:
+            raise UserError(f"Error al realizar la solicitud: {e}")
+
+        print(response.text)
+
+    @api.model
+    def recuperar_conteo_de_vehiculos_metasync(self):
+        api_key = self.obtener_parametros_metasync()
+        fecha = '20/12/2023 21:29:56'
+
+        headers = {
+            'apiKey': api_key,
+            'fecha': fecha
+        }
+
+        try:
+            response = requests.get('https://apis.metasync.com/Almacen/ConteoVehiculos', headers=headers)
+            response.raise_for_status()  # Lanza un error si la respuesta no es 200
+            print("Total vehiculos: ", response.json())
+        except requests.exceptions.RequestException as e:
+             raise UserError(f"Error al realizar la solicitud: {e}")
+
+        print(response.text)

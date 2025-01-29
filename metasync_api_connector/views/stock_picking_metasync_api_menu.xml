@@ -40,6 +40,26 @@
             </field>
         </record>
 
+          <!-- Acción del servidor para recuperar conteo de piezas de Metasync -->
+        <record id="recuperar_conteo_de_piezas_metasync" model="ir.actions.server">
+            <field name="name">Recuperar Conteo de Piezas Metasync</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['stock.picking'].recuperar_conteo_de_piezas_metasync()
+            </field>
+        </record>
+
+           <!-- Acción del servidor para recuperar conteo de vehiculos de Metasync -->
+        <record id="recuperar_conteo_de_vehiculos_metasync" model="ir.actions.server">
+            <field name="name">Recuperar Conteo de Vehiculos Metasync</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['stock.picking'].recuperar_conteo_de_vehiculos_metasync()
+            </field>
+        </record>
+
         <!-- Menú en Inventario para la acción -->
         <menuitem id="metasync_api_menu"
                   name="Metasync API"
@@ -71,5 +91,17 @@
                   parent="metasync_api_menu"
                   action="recuperar_cambios_vehiculos_empresa_metasync"
                   sequence="40"/>
+
+        <menuitem id="metasync_recuperar_conteo_de_piezas_menu"
+                  name="Recuperar Conteo de Piezas Metasync"
+                  parent="metasync_api_menu"
+                  action="recuperar_conteo_de_piezas_metasync"
+                  sequence="50"/>
+
+         <menuitem id="metasync_recuperar_conteo_de_vehiculos_menu"
+                  name="Recuperar Conteo de Vehiculos Metasync"
+                  parent="metasync_api_menu"
+                  action="recuperar_conteo_de_vehiculos_metasync"
+                  sequence="60"/>
     </data>
 </odoo>
