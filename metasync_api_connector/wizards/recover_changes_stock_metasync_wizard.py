@@ -9,7 +9,7 @@ class RecoverChangesStockMetasyncWizard(models.TransientModel):
     _name = 'recover.changes.stock.metasync.wizard'
     _description = 'Recuperar Cambios Stock Metasync'
 
-    fecha = fields.Datetime(string='Fecha', required=True, default="20/12/2023 21:29:56")
+    fecha = fields.Datetime(string='Fecha', required=True, default=lambda self: datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
     lastid = fields.Char(string='Last ID', required=True, default="0")
     offset = fields.Integer(string='Offset', required=True, default=10)
 
