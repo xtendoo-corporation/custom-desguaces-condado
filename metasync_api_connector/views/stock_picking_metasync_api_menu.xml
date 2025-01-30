@@ -67,11 +67,11 @@
                   sequence="10"/>
 
          <!-- Submenú para recuperar cambios de Metasync -->
-        <menuitem id="metasync_recuperar_canal_cambios_menu"
-                  name="Recuperar Cambios Canal"
-                  parent="metasync_api_menu"
-                  action="recuperar_cambios_almacen_metasync"
-                  sequence="10"/>
+<!--        <menuitem id="metasync_recuperar_canal_cambios_menu"-->
+<!--                  name="Recuperar Cambios Canal"-->
+<!--                  parent="metasync_api_menu"-->
+<!--                  action="recuperar_cambios_almacen_metasync"-->
+<!--                  sequence="10"/>-->
 
         <!-- Submenú para recuperar cambios de Metasync -->
         <menuitem id="metasync_recuperar_canal_empresa_cambios_menu"

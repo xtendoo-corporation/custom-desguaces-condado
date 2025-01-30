@@ -12,6 +12,8 @@
         'views/stock_picking_metasync_api_menu.xml',
         'views/product_category_views.xml',
         'views/product_template_only_form_view.xml',
+        'wizards/recover_changes_stock_metasync_wizard_view.xml',
+        'security/ir.model.access.csv',
     ],
     'installable': True,
     'application': False,
