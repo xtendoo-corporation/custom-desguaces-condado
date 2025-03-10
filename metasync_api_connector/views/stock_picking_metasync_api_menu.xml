@@ -74,11 +74,11 @@
 <!--                  sequence="10"/>-->
 
         <!-- Submenú para recuperar cambios de Metasync -->
-        <menuitem id="metasync_recuperar_canal_empresa_cambios_menu"
-                  name="Recuperar Cambios Canal Empresa"
-                  parent="metasync_api_menu"
-                  action="recuperar_cambios_almacen_empresa_metasync"
-                  sequence="20"/>
+<!--        <menuitem id="metasync_recuperar_canal_empresa_cambios_menu"-->
+<!--                  name="Recuperar Cambios Canal Empresa"-->
+<!--                  parent="metasync_api_menu"-->
+<!--                  action="recuperar_cambios_almacen_empresa_metasync"-->
+<!--                  sequence="20"/>-->
 
         <menuitem id="metasync_recuperar_cambios_vehiculos_menu"
                   name="Recuperar Cambios Vehiculos"

@@ -13,6 +13,7 @@
         'views/product_category_views.xml',
         'views/product_template_only_form_view.xml',
         'wizards/recover_changes_stock_metasync_wizard_view.xml',
+        'wizards/recover_changes_stock_company_metasync_wizard_view.xml',
         'security/ir.model.access.csv',
     ],
     'installable': True,
