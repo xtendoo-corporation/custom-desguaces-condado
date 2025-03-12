@@ -26,7 +26,7 @@
         </record>
 
         <menuitem id="metasync_recuperar_cambios_inventario_con_empresa_menu"
-                  name="Recuperar Cambios de Almacén con Empresa 2"
+                  name="Recuperar Cambios de Almacén con Empresa"
                   parent="metasync_api_menu"
                   action="action_recover_changes_stock_company_metasync_wizard"
                   sequence="20"/>

@@ -80,17 +80,17 @@
 <!--                  action="recuperar_cambios_almacen_empresa_metasync"-->
 <!--                  sequence="20"/>-->
 
-        <menuitem id="metasync_recuperar_cambios_vehiculos_menu"
-                  name="Recuperar Cambios Vehiculos"
-                  parent="metasync_api_menu"
-                  action="recuperar_cambios_vehiculos_metasync"
-                  sequence="30"/>
+<!--        <menuitem id="metasync_recuperar_cambios_vehiculos_menu"-->
+<!--                  name="Recuperar Cambios Vehiculos"-->
+<!--                  parent="metasync_api_menu"-->
+<!--                  action="recuperar_cambios_vehiculos_metasync"-->
+<!--                  sequence="30"/>-->
 
-        <menuitem id="metasync_recuperar_cambios_vehiculos_empresa_menu"
-                  name="Recuperar Cambios Vehiculos Empresa"
-                  parent="metasync_api_menu"
-                  action="recuperar_cambios_vehiculos_empresa_metasync"
-                  sequence="40"/>
+<!--        <menuitem id="metasync_recuperar_cambios_vehiculos_empresa_menu"-->
+<!--                  name="Recuperar Cambios Vehiculos Empresa"-->
+<!--                  parent="metasync_api_menu"-->
+<!--                  action="recuperar_cambios_vehiculos_empresa_metasync"-->
+<!--                  sequence="40"/>-->
 
         <menuitem id="metasync_recuperar_conteo_de_piezas_menu"
                   name="Recuperar Conteo de Piezas Metasync"

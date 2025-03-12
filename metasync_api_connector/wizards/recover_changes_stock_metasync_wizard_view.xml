@@ -26,7 +26,7 @@
         </record>
 
         <menuitem id="metasync_recuperar_canal_cambios_menu"
-                  name="Recuperar Cambios Canal 2"
+                  name="Recuperar Cambios Canal"
                   parent="metasync_api_menu"
                   action="action_recover_changes_stock_metasync_wizard"
                   sequence="10"/>

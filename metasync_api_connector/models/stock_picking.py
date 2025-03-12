@@ -1,4 +1,4 @@
-from odoo import models, api
+from odoo import models, api, _
 import base64
 import requests
 from odoo.exceptions import UserError
@@ -346,80 +346,80 @@ class StockPicking(models.Model):
     #         raise UserError(f"Error al realizar la solicitud: {e}")
 
 
-    @api.model
-    def recuperar_cambios_vehiculos_metasync(self):
-        print("*" * 80)
-        api_key = self.obtener_parametros_metasync()
-        fecha = '20/12/2023 21:29:56'
-        lastid = "0"
-        offset = "50"
-        headers = {
-            'apiKey': api_key,
-            'fecha': fecha,
-            'lastid': lastid,
-            'offset': offset,
-        }
-
-        try:
-            response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal', headers=headers)
-            response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            print("Respuesta completa:", response.json())
-            # Acceder a los vehiculos
-            print("/" * 80)
-            if len(response.json()['vehiculos']) == 0:
-                print("No hay vehículos")
-            else:
-                for vehiculo in response.json()['vehiculos']:
-                    print(f"ID del vehículo: {vehiculo['idLocal']}")
-                    print(f"Marca del vehículo: {vehiculo['nombreMarca']}")
-                    print(f"Modelo del vehículo: {vehiculo['nombreModelo']}")
-                    print('---')
-            print("/" * 80)
-            return response.json()
-
-        except requests.exceptions.RequestException as e:
-            raise UserError(f"Error al realizar la solicitud: {e}")
-
-
-    @api.model
-    def recuperar_cambios_vehiculos_empresa_metasync(self):
-        print("*" * 80)
-        api_key, idempresa = self.obtener_parametros_con_empresa_metasync()
-        fecha = '20/12/2023 21:29:56'
-        lastid = "0"
-        offset = "50"
-
-        headers = {
-            'apiKey': api_key,
-            'fecha': fecha,
-            'lastid': lastid,
-            'offset': offset,
-            'idempresa': idempresa
-        }
-
-        try:
-            response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosEmpresa', headers=headers)
-            response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            # Acceder a las piezas
-            print("/" * 80)
-            if len(response.json()['vehiculos']) == 0:
-                print("No hay vehículos")
-            else:
-                for vehiculo in response.json()['vehiculos']:
-                    print(f"ID del vehículo: {vehiculo['idLocal']}")
-                    print(f"Marca del vehículo: {vehiculo['nombreMarca']}")
-                    print(f"Modelo del vehículo: {vehiculo['nombreModelo']}")
-                    print('---')
-            print("/" * 80)
-            return response.json()
-
-        except requests.exceptions.RequestException as e:
-            raise UserError(f"Error al realizar la solicitud: {e}")
+    # @api.model
+    # def recuperar_cambios_vehiculos_metasync(self):
+    #     print("*" * 80)
+    #     api_key = self.obtener_parametros_metasync()
+    #     fecha = '20/12/2023 21:29:56'
+    #     lastid = "0"
+    #     offset = "10"
+    #     headers = {
+    #         'apiKey': api_key,
+    #         'fecha': fecha,
+    #         'lastid': lastid,
+    #         'offset': offset,
+    #     }
+    #
+    #     try:
+    #         response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal', headers=headers)
+    #         response.raise_for_status()  # Lanza un error si la respuesta no es 200
+    #         print("Respuesta completa:", response.json())
+    #         # Acceder a los vehiculos
+    #         print("/" * 80)
+    #         if len(response.json()['vehiculos']) == 0:
+    #             print("No hay vehículos")
+    #         else:
+    #             for vehiculo in response.json()['vehiculos']:
+    #                 print(f"ID del vehículo: {vehiculo['idLocal']}")
+    #                 print(f"Marca del vehículo: {vehiculo['nombreMarca']}")
+    #                 print(f"Modelo del vehículo: {vehiculo['nombreModelo']}")
+    #                 print('---')
+    #         print("/" * 80)
+    #         return response.json()
+    #
+    #     except requests.exceptions.RequestException as e:
+    #         raise UserError(f"Error al realizar la solicitud: {e}")
+    #
+    #
+    # @api.model
+    # def recuperar_cambios_vehiculos_empresa_metasync(self):
+    #     print("*" * 80)
+    #     api_key, idempresa = self.obtener_parametros_con_empresa_metasync()
+    #     fecha = '20/12/2023 21:29:56'
+    #     lastid = "0"
+    #     offset = "10"
+    #
+    #     headers = {
+    #         'apiKey': api_key,
+    #         'fecha': fecha,
+    #         'lastid': lastid,
+    #         'offset': offset,
+    #         'idempresa': idempresa
+    #     }
+    #
+    #     try:
+    #         response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosEmpresa', headers=headers)
+    #         response.raise_for_status()  # Lanza un error si la respuesta no es 200
+    #         # Acceder a las piezas
+    #         print("/" * 80)
+    #         if len(response.json()['vehiculos']) == 0:
+    #             print("No hay vehículos")
+    #         else:
+    #             for vehiculo in response.json()['vehiculos']:
+    #                 print(f"ID del vehículo: {vehiculo['idLocal']}")
+    #                 print(f"Marca del vehículo: {vehiculo['nombreMarca']}")
+    #                 print(f"Modelo del vehículo: {vehiculo['nombreModelo']}")
+    #                 print('---')
+    #         print("/" * 80)
+    #         return response.json()
+    #
+    #     except requests.exceptions.RequestException as e:
+    #         raise UserError(f"Error al realizar la solicitud: {e}")
 
     @api.model
     def recuperar_conteo_de_piezas_metasync(self):
         api_key = self.obtener_parametros_metasync()
-        fecha = '20/12/2023 21:29:56'
+        fecha = '01/01/2000 21:29:56'
 
         headers = {
             'apiKey': api_key,
@@ -429,7 +429,17 @@ class StockPicking(models.Model):
         try:
             response = requests.get('https://apis.metasync.com/Almacen/ConteoPiezas', headers=headers)
             response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            print("Total piezas: ",response.json())
+            total_piezas = response.json()
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Conteo de Piezas'),
+                    'message': _('Total piezas: %s' % total_piezas),
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
         except requests.exceptions.RequestException as e:
             raise UserError(f"Error al realizar la solicitud: {e}")
 
@@ -438,7 +448,7 @@ class StockPicking(models.Model):
     @api.model
     def recuperar_conteo_de_vehiculos_metasync(self):
         api_key = self.obtener_parametros_metasync()
-        fecha = '20/12/2023 21:29:56'
+        fecha = '01/01/0001 00:00:00'
 
         headers = {
             'apiKey': api_key,
@@ -448,7 +458,17 @@ class StockPicking(models.Model):
         try:
             response = requests.get('https://apis.metasync.com/Almacen/ConteoVehiculos', headers=headers)
             response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            print("Total vehiculos: ", response.json())
+            total_vehiculos = response.json()
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Conteo de Vehículos'),
+                    'message': _('Total vehículos: %s' % total_vehiculos),
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
         except requests.exceptions.RequestException as e:
              raise UserError(f"Error al realizar la solicitud: {e}")
 
