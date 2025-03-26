@@ -1,0 +1,8 @@
+<odoo>
+    <template id="snippet_bienvenida" name="Snippet de Bienvenida">
+        <div class="s_snippet_bienvenida">
+            <h2>¡Bienvenido a nuestro sitio web!</h2>
+            <p>Estamos encantados de tenerte aquí.</p>
+        </div>
+    </template>
+</odoo>

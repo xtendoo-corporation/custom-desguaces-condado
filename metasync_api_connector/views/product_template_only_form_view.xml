@@ -24,6 +24,7 @@
                                 <field name="material_type" string="Tipo Material"/>
                                 <field name="modification_date" string="Fecha Modificación"/>
                                 <field name="cod_almacen" string="Código Almacén"/>
+                                <field name="is_vehicle" string="¿Es Vehículo?"/>
                             </group>
                         </group>
                     </page>

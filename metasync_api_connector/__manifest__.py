@@ -9,7 +9,8 @@
     """,
     'depends': ['stock',
                 'fleet',
-                'website_sale'],
+                'website_sale',
+                'web'],
     'data': [
         'views/stock_picking_metasync_api_menu.xml',
         'views/product_category_views.xml',
@@ -19,6 +20,11 @@
         'wizards/recover_changes_stock_company_metasync_wizard_view.xml',
         'security/ir.model.access.csv',
     ],
+    'assets': {
+        'web.assets_frontend': [
+             # 'metasync_api_connector/static/src/xml/snippets.xml',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'LGPL-3',

@@ -25,7 +25,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
         if not idempresa:
             raise UserError(
                 "No está bien configurado el parámetro 'metasync.inventory.idempresa' o no es correcto.")
-        print("Fecha: " , self.fecha.strftime('%d/%m/%Y %H:%M:%S'))
+        print("Fecha: ", self.fecha.strftime('%d/%m/%Y %H:%M:%S'))
         headers = {
             'apiKey': api_key,
             'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
@@ -59,10 +59,10 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 print("No hay piezas")
             else:
                 for pieza in response.json()['piezas']:
-                    # print('---')
+                    print('---')
                     # print(f"ID Empresa: {pieza['idEmpresa']}")
                     # print(f"Referencia local: {pieza['refLocal']}")
-                    # print(f"ID Vehículo: {pieza['idVehiculo']}")
+                    print(f"ID Vehículo: {pieza['idVehiculo']}")
                     # print(f"Código Familia: {pieza['codFamilia']}")
                     # print(f"Descripción Familia: {pieza['descripcionFamilia']}")
                     # print(f"Código Artículo: {pieza['codArticulo']}")
@@ -127,6 +127,25 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                             })
                             print(f"Categoría {category.name} creada")
 
+                        vehiculos_public_category = self.env['product.public.category'].search([
+                            ('name', '=', 'Vehículos')
+                        ], limit=1)
+                        if not vehiculos_public_category:
+                            vehiculos_public_category = self.env['product.public.category'].create({
+                                'name': 'Vehículos',
+                            })
+
+                        real_public_category = self.env['product.public.category'].search([
+                            ('name', '=', pieza['descripcionFamilia'])
+                        ], limit=1)
+                        if not real_public_category:
+                            real_public_category = self.env['product.public.category'].create({
+                                'name': pieza['descripcionFamilia'],
+                            })
+
+                        # Al crear el producto, asignar ambas categorías públicas
+                        public_categ_ids = [(6, 0, [vehiculos_public_category.id, real_public_category.id])]
+
                         print(f"Creando el producto {pieza['descripcionArticulo']}:")
                         product = self.env['product.product'].create({
                             'name': pieza['descripcionArticulo'],
@@ -146,6 +165,8 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                             'material_type': tipo_material_texto,
                             'modification_date': formatted_date,
                             'cod_almacen': pieza['codAlmacen'],
+                            'public_categ_ids': public_categ_ids,
+                            'website_published': True,
                         })
                     # Acceder a los vehículos
                 if len(response.json()['vehiculos']) == 0:
@@ -153,51 +174,53 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 else:
                     print('VEHÍCULOS')
                     for vehiculo in response.json()['vehiculos']:
-                        # print('---')
-                        # print(f"ID local: {vehiculo['idLocal']}")
-                        # print(f"ID Empresa: {vehiculo['idEmpresa']}")
-                        # print(f"Fecha de modificación: {vehiculo['fechaMod']}")
-                        # print(f"Código: {vehiculo['codigo']}")
-                        # print(f"Estado: {vehiculo['estado']}")
-                        # print(f"Bastidor: {vehiculo['bastidor']}")
-                        # print(f"Matrícula: {vehiculo['matricula']}")
-                        # print(f"Color: {vehiculo['color']}")
-                        # print(f"Kilometraje: {vehiculo['kilometraje']}")
-                        # print(f"Año del vehículo: {vehiculo['anyoVehiculo']}")
-                        # print(f"Código Motor: {vehiculo['codigoMotor']}")
-                        # print(f"Código Cambio: {vehiculo['codigoCambio']}")
-                        # print(f"Observaciones: {vehiculo['observaciones']}")
-                        # print(f"Imagen/es:")
-                        # for url in vehiculo['urlsImgs']:
-                        #     print(f"- URL: {url}")
-                        # print(f"Código Marca: {vehiculo['codMarca']}")
-                        # print(f"Nombre Marca: {vehiculo['nombreMarca']}")
-                        # print(f"Código Modelo: {vehiculo['codModelo']}")
-                        # print(f"Nombre Modelo: {vehiculo['nombreModelo']}")
-                        # print(f"Código Versión: {vehiculo['codVersion']}")
-                        # print(f"Nombre Versión: {vehiculo['nombreVersion']}")
-                        # print(f"Tipo Versión: {vehiculo['tipoVersion']}")
-                        # print(f"Combustible: {vehiculo['combustible']}")
-                        # print(f"Puertas: {vehiculo['puertas']}")
-                        # print(f"Año Inicio: {vehiculo['anyoInicio']}")
-                        # print(f"Año Fin: {vehiculo['anyoFin']}")
-                        # print(f"Tipos Motor: {vehiculo['tiposMotor']}")
-                        # print(f"Potencia HP: {vehiculo['potenciaHP']}")
-                        # print(f"Potencia KW: {vehiculo['potenciaKw']}")
-                        # print(f"Cilindrada: {vehiculo['cilindrada']}")
-                        # print(f"Transmisión: {vehiculo['transmision']}")
-                        # print(f"Alimentación: {vehiculo['alimentacion']}")
-                        # print(f"Número de marchas: {vehiculo['numMarchas']}")
-                        # print(f"RV Code: {vehiculo['rvCode']}")
-                        # print(f"K Type: {vehiculo['ktype']}")
-                        # print('---')
+                        print('---')
+                        print(f"ID local: {vehiculo['idLocal']}")
+                        print(f"ID Empresa: {vehiculo['idEmpresa']}")
+                        print(f"Fecha de modificación: {vehiculo['fechaMod']}")
+                        print(f"Código: {vehiculo['codigo']}")
+                        print(f"Estado: {vehiculo['estado']}")
+                        print(f"Bastidor: {vehiculo['bastidor']}")
+                        print(f"Matrícula: {vehiculo['matricula']}")
+                        print(f"Color: {vehiculo['color']}")
+                        print(f"Kilometraje: {vehiculo['kilometraje']}")
+                        print(f"Año del vehículo: {vehiculo['anyoVehiculo']}")
+                        print(f"Código Motor: {vehiculo['codigoMotor']}")
+                        print(f"Código Cambio: {vehiculo['codigoCambio']}")
+                        print(f"Observaciones: {vehiculo['observaciones']}")
+                        print(f"Imagen/es:")
+                        for url in vehiculo['urlsImgs']:
+                            print(f"- URL: {url}")
+                        print(f"Código Marca: {vehiculo['codMarca']}")
+                        print(f"Nombre Marca: {vehiculo['nombreMarca']}")
+                        print(f"Código Modelo: {vehiculo['codModelo']}")
+                        print(f"Nombre Modelo: {vehiculo['nombreModelo']}")
+                        print(f"Código Versión: {vehiculo['codVersion']}")
+                        print(f"Nombre Versión: {vehiculo['nombreVersion']}")
+                        print(f"Tipo Versión: {vehiculo['tipoVersion']}")
+                        print(f"Combustible: {vehiculo['combustible']}")
+                        print(f"Puertas: {vehiculo['puertas']}")
+                        print(f"Año Inicio: {vehiculo['anyoInicio']}")
+                        print(f"Año Fin: {vehiculo['anyoFin']}")
+                        print(f"Tipos Motor: {vehiculo['tiposMotor']}")
+                        print(f"Potencia HP: {vehiculo['potenciaHP']}")
+                        print(f"Potencia KW: {vehiculo['potenciaKw']}")
+                        print(f"Cilindrada: {vehiculo['cilindrada']}")
+                        print(f"Transmisión: {vehiculo['transmision']}")
+                        print(f"Alimentación: {vehiculo['alimentacion']}")
+                        print(f"Número de marchas: {vehiculo['numMarchas']}")
+                        print(f"RV Code: {vehiculo['rvCode']}")
+                        print(f"K Type: {vehiculo['ktype']}")
+                        print('---')
 
                         image_data = None
                         if vehiculo['urlsImgs']:
                             first_image_url = vehiculo['urlsImgs'][0] + ".jpeg"
                             image_data = self.fetch_image(first_image_url)
                         # modification_date = self.parse_date(vehiculo['fechaMod'])
-                        name = f"{vehiculo['nombreMarca']} {vehiculo['nombreModelo']}" if vehiculo['nombreMarca'] and vehiculo['nombreModelo'] else "Vehiculo test"
+                        name = f"{vehiculo['nombreMarca']} {vehiculo['nombreModelo']}" if vehiculo['nombreMarca'] and \
+                                                                                          vehiculo[
+                                                                                              'nombreModelo'] else "Vehiculo test"
                         #                                <tr><td>ID local</td><td>{vehiculo['idLocal']}</td></tr>
                         #                                <tr><td>ID Empresa</td><td>{vehiculo['idEmpresa']}</td></tr>
                         #                                <tr><td>Fecha de modificación</td><td>{modification_date}</td></tr>
@@ -233,7 +256,9 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                         #        <tr><td>K Type</td><td>{vehiculo['ktype']}</td></tr>
                         #    </table>
                         #    """
-                        filtered_vehiculo = {k: v for k, v in vehiculo.items() if v not in [0, None, '', []] and k not in ['idLocal', 'idEmpresa', 'urlsImgs']}
+                        filtered_vehiculo = {k: v for k, v in vehiculo.items() if
+                                             v not in [0, None, '', []] and k not in ['idLocal', 'idEmpresa',
+                                                                                      'urlsImgs']}
 
                         # Construct the website description
                         website_description = """
@@ -287,16 +312,30 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                             </div>
                         """
 
-                        vehiculos_category = self.env['product.public.category'].search([('name', '=', 'Vehículo')],
-                                                                                        limit=1)
-                        if not vehiculos_category:
-                            raise UserError("The category 'Vehiculos' does not exist.")
+                        is_category = self.env['product.category'].search([
+                            ('default_code', '=', 'VEH'),
+                            ('name', '=', 'Vehículos')
+                        ])
+                        if is_category:
+                            print(f"La categoría Vehículos ya existe en la base de datos")
+                            category = is_category
+                        else:
+                            print(f"Creando la categoría Vehículos:")
+                            category = self.env['product.category'].create({
+                                'name': 'Vehículos',
+                                'default_code': 'VEH',
+                                'parent_id': 1,
+                            })
+                            print(f"Categoría {category.name} creada")
+
+                        if not category:
+                            raise UserError("La categoría 'Vehículos' no se ha podido crear.")
 
                         existing_category = self.env['product.public.category'].search([
                             ('name', '=', name),
                             ('idLocal', '=', vehiculo['idLocal']),
                             ('idEmpresa', '=', vehiculo['idEmpresa']),
-                            ('parent_id', '=', vehiculos_category.id),
+                            ('parent_id', '=', category.id),
                         ], limit=1)
                         print(f"Existing category: {existing_category}")
                         if not existing_category:
@@ -307,7 +346,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                                 'name': name,
                                 'idLocal': vehiculo['idLocal'],
                                 'idEmpresa': vehiculo['idEmpresa'],
-                                'parent_id': vehiculos_category.id,
+                                'parent_id': category.id,
                                 'image_1920': image_data,
                                 'website_description': website_description,
                             })
@@ -316,6 +355,42 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                             existing_category.write({
                                 'image_1920': image_data,
                                 'website_description': website_description,
+                            })
+
+                        image_data_vehicle = None
+                        if vehiculo['urlsImgs']:
+                            first_image_url = vehiculo['urlsImgs'][0] + ".jpeg"
+                            image_data_vehicle = self.fetch_image(first_image_url)
+                        print(f"Creating product with reference {vehiculo['idLocal']}")
+
+                        if not existing_category or not existing_category.id:
+                            raise UserError("La categoría del vehículo no se ha creado correctamente.")
+
+                        existing_product = self.env['product.template'].search([
+                            ('default_code', '=', vehiculo['idLocal'])
+                        ], limit=1)
+
+                        if existing_product:
+                            print(f"Actualizando producto existente: {existing_product.name}")
+                            existing_product.write({
+                                'image_1920': image_data_vehicle,
+                                'public_categ_ids': [(6, 0, [existing_category.id])],
+                                'website_published': True,
+                                'name': name,
+                                'is_vehicle': True,  # <- Actualiza también si ya existe
+                            })
+                        else:
+                            print(f"Creando producto nuevo para el vehículo: {name}")
+                            self.env['product.template'].create({
+                                'name': name,
+                                'default_code': vehiculo['idLocal'],
+                                'image_1920': image_data_vehicle,
+                                'purchase_ok': False,
+                                'sale_ok': False,
+                                'website_published': True,
+                                'list_price': 0,
+                                'categ_id': category.id,
+                                'is_vehicle': True,  # <- Aquí se indica que es un vehículo
                             })
 
                         product_templates = self.env['product.template'].search(
@@ -328,6 +403,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                                 })
                         else:
                             existing_category.unlink()
+
                 print("*" * 80)
                 return response.json()
         except requests.exceptions.RequestException as e:

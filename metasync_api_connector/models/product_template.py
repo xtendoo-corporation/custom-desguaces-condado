@@ -39,4 +39,8 @@ class ProductTemplate(models.Model):
     cod_almacen = fields.Integer(
         string='Código Almacén',
     )
+    is_vehicle = fields.Boolean(
+        string='¿Es Vehículo?',
+        default=False,
+    )
 
