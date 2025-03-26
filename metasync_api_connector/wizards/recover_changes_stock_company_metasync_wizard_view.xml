@@ -1,0 +1,34 @@
+<odoo>
+    <data>
+        <record id="view_recover_changes_stock_company_metasync_wizard_form" model="ir.ui.view">
+            <field name="name">recover.changes.stock.company.metasync.wizard.form</field>
+            <field name="model">recover.changes.stock.company.metasync.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Recuperar Cambios de Almacén con Empresa">
+                    <group>
+                        <field name="fecha"/>
+                        <field name="lastid"/>
+                        <field name="offset"/>
+                    </group>
+                    <footer>
+                        <button string="Recuperar Cambios" type="object" name="recuperar_cambios_almacen_empresa_metasync" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_recover_changes_stock_company_metasync_wizard" model="ir.actions.act_window">
+            <field name="name">Recuperar Cambios de Almacén con Empresa</field>
+            <field name="res_model">recover.changes.stock.company.metasync.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="metasync_recuperar_cambios_inventario_con_empresa_menu"
+                  name="Recuperar Cambios de Almacén con Empresa"
+                  parent="metasync_api_menu"
+                  action="action_recover_changes_stock_company_metasync_wizard"
+                  sequence="20"/>
+    </data>
+</odoo>
