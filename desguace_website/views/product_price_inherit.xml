@@ -1,0 +1,14 @@
+<odoo>
+    <template id="product_price_inherit" inherit_id="website_sale.product_price" name="Hide h3 if price is zero">
+        <xpath expr="//h3[@class='css_editable_mode_hidden']" position="replace">
+            <h3 t-if="combination_info['price'] != 0" class="css_editable_mode_hidden">
+                <span class="oe_price"
+                      t-out="combination_info['price']"
+                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                      style="white-space: nowrap;" />
+                <span itemprop="price" style="display:none;" t-out="combination_info['price']"/>
+                <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+            </h3>
+        </xpath>
+    </template>
+</odoo>
