@@ -1,77 +1,155 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-    <!-- Page template for displaying vehicle -->
-    <template id="product_vehicle" name="vehicle">
-        <t t-call="website.layout">
-            <t t-set="additional_title">Product vehicle</t>
-            <div id="wrap" t-attf-class="wrapper">
-                <div class="container">
-                    <div class="row">
-                        <form
-                            action="/page/product_vehicle"
-                            class="form-horizontal mt32 col-lg-8"
-                            method="post"
-                        >
-                            <div class="input-group" style="margin-left:60%;">
-                                <div class="col-lg-6">
-                                    <input
-                                        type="text"
-                                        name="search"
-                                        class="form-control"
-                                        placeholder="Search..."
-                                        t-att-value="search"
-                                    />
-                                </div>
-                                <div class="col-lg-2">
-                                    <button class="btn btn-primary">Search</button>
-                                </div>
-                            </div>
-                            <input
-                                type="hidden"
-                                name="csrf_token"
-                                t-att-value="request.csrf_token()"
-                            />
-                        </form>
-                    </div>
-                    <br />
-                    <section>
-                        <t t-if="brand_rec">
-                            <div class="row">
-                                <t t-foreach="brand_rec" t-as="o">
-                                    <div
-                                        class="card border-0 col-lg-3 col-md-6 mb-4 text-center brand_item"
-                                    >
-                                        <a
-                                            t-att-href="keep('/shop/vehicle',brand = o.id)"
-                                        >
-                                            <img
-                                                class="card-img-top img-fluid brand_item_image"
-                                                t-attf-src="/website/image/product.brand/#{o.id}/logo"
-                                                t-att-alt="o.name"
-                                            />
-                                            <div class="card-body border-0">
-                                                <span t-esc="o.name" />
-                                            </div>
-                                        </a>
-                                    </div>
-                                </t>
-                            </div>
-                        </t>
-                        <t t-if="not brand_rec">
-                            <div class="text-center text-muted">
-                                <h3 class="css_editable_display">No vehicle Found.</h3>
-                            </div>
-                        </t>
-                    </section>
-                </div>
-            </div>
-        </t>
-    </template>
-    <template id="categorie_link" inherit_id="website_sale.categorie_link">
-        <xpath expr="//a[@t-field='c.name']/.." position="attributes">
-            <attribute
-                name="t-att-data-link-href"
-            >keep('/shop/category/' + slug(c), category=0, brand=brand)</attribute>
-        </xpath>
-    </template>
+    <!--    &lt;!&ndash; Page template for displaying vehicle &ndash;&gt;-->
+    <!--    <template id="product_vehicle" name="vehicle">-->
+    <!--        <t t-call="website.layout">-->
+    <!--            <t t-set="additional_title">Product vehicle</t>-->
+    <!--            <div id="wrap" t-attf-class="wrapper">-->
+    <!--                <div class="container">-->
+    <!--                    <div class="row">-->
+    <!--                        <form-->
+    <!--                            action="/page/product_vehicle"-->
+    <!--                            class="form-horizontal mt32 col-lg-8"-->
+    <!--                            method="post"-->
+    <!--                        >-->
+    <!--                            <div class="input-group" style="margin-left:60%;">-->
+    <!--                                <div class="col-lg-6">-->
+    <!--                                    <input-->
+    <!--                                        type="text"-->
+    <!--                                        name="search"-->
+    <!--                                        class="form-control"-->
+    <!--                                        placeholder="Search..."-->
+    <!--                                        t-att-value="search"-->
+    <!--                                    />-->
+    <!--                                </div>-->
+    <!--                                <div class="col-lg-2">-->
+    <!--                                    <button class="btn btn-primary">Search</button>-->
+    <!--                                </div>-->
+    <!--                            </div>-->
+    <!--                            <input-->
+    <!--                                type="hidden"-->
+    <!--                                name="csrf_token"-->
+    <!--                                t-att-value="request.csrf_token()"-->
+    <!--                            />-->
+    <!--                        </form>-->
+    <!--                    </div>-->
+    <!--                    <br/>-->
+    <!--                    <section>-->
+    <!--                        <t t-if="brand_rec">-->
+    <!--                            <div class="row">-->
+    <!--                                <t t-foreach="brand_rec" t-as="o">-->
+    <!--                                    <div-->
+    <!--                                        class="card border-0 col-lg-3 col-md-6 mb-4 text-center brand_item"-->
+    <!--                                    >-->
+    <!--                                        <a-->
+    <!--                                            t-att-href="keep('/shop/vehicle',brand = o.id)"-->
+    <!--                                        >-->
+    <!--                                            <img-->
+    <!--                                                class="card-img-top img-fluid brand_item_image"-->
+    <!--                                                t-attf-src="/website/image/product.brand/#{o.id}/logo"-->
+    <!--                                                t-att-alt="o.name"-->
+    <!--                                            />-->
+    <!--                                            <div class="card-body border-0">-->
+    <!--                                                <span t-esc="o.name"/>-->
+    <!--                                            </div>-->
+    <!--                                        </a>-->
+    <!--                                    </div>-->
+    <!--                                </t>-->
+    <!--                            </div>-->
+    <!--                        </t>-->
+    <!--                        <t t-if="not brand_rec">-->
+    <!--                            <div class="text-center text-muted">-->
+    <!--                                <h3 class="css_editable_display">No vehicle Found.</h3>-->
+    <!--                            </div>-->
+    <!--                        </t>-->
+    <!--                    </section>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </t>-->
+    <!--    </template>-->
+    <!--    <template id="categorie_link" inherit_id="website_sale.categorie_link">-->
+    <!--        <xpath expr="//a[@t-field='c.name']/.." position="attributes">-->
+    <!--            <attribute-->
+    <!--                name="t-att-data-link-href"-->
+    <!--            >keep('/shop/category/' + slug(c), category=0, brand=brand)-->
+    <!--            </attribute>-->
+    <!--        </xpath>-->
+    <!--    </template>-->
+
+    <!-- List view for product.vehicle -->
+    <record id="product_vehicle_list_view" model="ir.ui.view">
+        <field name="name">product.vehicle.list</field>
+        <field name="model">product.vehicle</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="products_count"/>
+                <field name="website_published" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- List view for product.vehicle.image -->
+    <record id="view_product_vehicle_image_list" model="ir.ui.view">
+        <field name="name">product.vehicle.image.list</field>
+        <field name="model">product.vehicle.image</field>
+        <field name="arch" type="xml">
+            <list string="Vehicle Images">
+                <!-- Use the 'image' field to display the image -->
+                <field name="image" widget="image" options="{'preview_image': 'image'}" width="100"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- This view is used to create and edit vehicle records -->
+    <record id="product_vehicle_form_view" model="ir.ui.view">
+        <field name="name">product.vehicle.form</field>
+        <field name="model">product.vehicle</field>
+        <field name="arch" type="xml">
+            <form string="Vehicle Products">
+                <sheet>
+                    <!-- Group with basic fields -->
+                    <group>
+                        <field name="name" placeholder="Ingrese el nombre del vehículo"/>
+                        <field name="description"/>
+                    </group>
+                    <!-- Group with additional information -->
+                    <group>
+                        <field name="is_published" widget="boolean_toggle"/>
+                        <field name="products_count" readonly="1"/>
+                    </group>
+                    <!-- Notebook is used to group related fields into tabs -->
+                    <notebook>
+                        <page string="Imágenes">
+                            <!-- Reference the previously defined list view to display images in 'list,form' mode -->
+                            <field name="image_ids">
+                                <list view_id="view_product_vehicle_image_list"/>
+                            </field>
+                        </page>
+                        <page string="Productos Relacionados">
+                            <field name="product_ids" mode="list,form"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Window action to open the vehicle list -->
+    <record id="action_product_vehicle" model="ir.actions.act_window">
+        <field name="name">Vehicle</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.vehicle</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu item for the vehicle -->
+    <menuitem id="menu_product_vehicle"
+              name="Vehicles"
+              action="desguace_website_sale_product_vehicle.action_product_vehicle"
+              parent="stock.menu_stock_inventory_control"
+              sequence="200"
+    />
 </odoo>

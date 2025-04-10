@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_product_vehicle_public,public.product.vehicle,product_vehicle.model_product_vehicle,base.group_public,1,0,0,0
+desguace_website_sale_product_vehicle.access_product_vehicle,access_product_vehicle,desguace_website_sale_product_vehicle.model_product_vehicle,base.group_user,1,1,1,1
+desguace_website_sale_product_vehicle.access_product_vehicle_image,access_product_vehicle_image,desguace_website_sale_product_vehicle.model_product_vehicle_image,base.group_user,1,1,1,1

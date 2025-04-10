@@ -16,17 +16,19 @@ class ProductVehicle(models.Model):
     description = fields.Text(
         translate=True
     )
-    logo = fields.Binary(
-        "Logo File"
+    image_ids = fields.One2many(
+        comodel_name='product.vehicle.image',
+        inverse_name='product_vehicle_image_id',
+        string='Images'
     )
-    product_ids = fields.One2many(
+    product_ids = fields.Many2many(
         comodel_name="product.template",
         inverse_name="product_vehicle_id",
         string="vehicle Products"
     )
     products_count = fields.Integer(
         string="Number of products",
-        compute="_compute_products_count",
+        compute="_compute_products_count"
     )
     is_published = fields.Boolean(
         default=True

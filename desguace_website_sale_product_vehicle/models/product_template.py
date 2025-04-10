@@ -1,9 +1,15 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from odoo import api, models
+from odoo import api, models, fields
 
 
 class ProductTemplate(models.Model):
     _inherit = "product.template"
+
+    product_vehicle_id = fields.Many2one(
+        comodel_name='product.vehicle',
+        string='Vehicle',
+        index=True,
+    )
 
     @api.model
     def _search_get_detail(self, website, order, options):
