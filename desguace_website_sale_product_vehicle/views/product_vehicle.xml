@@ -97,10 +97,19 @@
         <field name="arch" type="xml">
             <form string="Vehicle Products">
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_view_products" type="object"
+                                icon="fa-cubes">
+                            <field name="products_count" widget="statinfo" string="Productos"/>
+                        </button>
+                        <button class="oe_stat_button" name="website_publish_button" type="object"
+                                icon="fa-globe">
+                            <field name="is_published" widget="website_publish_button"/>
+                        </button>
+                    </div>
                     <group>
                         <field name="name" placeholder="Insert vehicle name"/>
                         <field name="description"/>
-                        <field name="is_published" widget="boolean_toggle"/>
                         <field name="products_count" readonly="1"/>
                     </group>
                     <group name="product_template_images" string="Images of vehicle">

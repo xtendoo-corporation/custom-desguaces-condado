@@ -16,10 +16,10 @@ class ProductVehicle(models.Model):
     description = fields.Text(
         translate=True
     )
-    product_template_id = fields.Many2one(
-        comodel_name='product.template',
-        string='Product Template Reference',
-        auto_join=True,
+    image_ids = fields.One2many(
+        comodel_name='product.vehicle.image',
+        inverse_name='product_vehicle_image_id',
+        string='Images'
     )
     product_ids = fields.One2many(
         comodel_name='product.template',
@@ -33,11 +33,8 @@ class ProductVehicle(models.Model):
     is_published = fields.Boolean(
         default=True
     )
-    product_image_ids = fields.One2many(
-        comodel_name='product.image',
-        inverse_name='product_vehicle_id',
-        string='Images'
-    )
+
+
     @api.depends("product_ids")
     def _compute_products_count(self):
         product_model = self.env["product.template"]
