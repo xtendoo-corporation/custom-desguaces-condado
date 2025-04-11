@@ -16,14 +16,8 @@ class ProductVehicle(models.Model):
     description = fields.Text(
         translate=True
     )
-    product_template_image_ids = fields.One2many(
-        comodel_name='product.image',
-        related='product_template_id.product_template_image_ids',
-        string='Images',
-        readonly=False,
-    )
     product_template_id = fields.Many2one(
-        'product.template',
+        comodel_name='product.template',
         string='Product Template Reference',
         auto_join=True,
     )
@@ -39,7 +33,11 @@ class ProductVehicle(models.Model):
     is_published = fields.Boolean(
         default=True
     )
-
+    product_image_ids = fields.One2many(
+        comodel_name='product.image',
+        inverse_name='product_vehicle_id',
+        string='Images'
+    )
     @api.depends("product_ids")
     def _compute_products_count(self):
         product_model = self.env["product.template"]
@@ -52,14 +50,3 @@ class ProductVehicle(models.Model):
         data = {group["product_vehicle_id"][0]: group["__count"] for group in groups}
         for vehicle in self:
             vehicle.products_count = data.get(vehicle.id, 0)
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        # Crear un product.template vacío para cada vehículo
-        for vals in vals_list:
-            template = self.env['product.template'].create({
-                'name': vals.get('name', 'New Vehicle'),
-                'type': 'service',  # o el tipo que prefieras
-            })
-            vals['product_template_id'] = template.id
-        return super().create(vals_list)

@@ -76,6 +76,7 @@
     <!--        </xpath>-->
     <!--    </template>-->
 
+
     <!-- List view for product.vehicle -->
     <record id="product_vehicle_list_view" model="ir.ui.view">
         <field name="name">product.vehicle.list</field>
@@ -104,7 +105,7 @@
                     </group>
                     <group name="product_template_images" string="Images of vehicle">
                         <field
-                            name="product_template_image_ids"
+                            name="product_image_ids"
                             colspan="2"
                             widget="x2_many_media_viewer"
                             options="{'convert_to_webp': True}"
@@ -134,3 +135,5 @@
               groups="base.group_user"
     />
 </odoo>
+
+
