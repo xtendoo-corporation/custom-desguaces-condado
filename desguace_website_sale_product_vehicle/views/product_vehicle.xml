@@ -89,19 +89,6 @@
         </field>
     </record>
 
-    <!-- List view for product.vehicle.image -->
-    <record id="view_product_vehicle_image_list" model="ir.ui.view">
-        <field name="name">product.vehicle.image.list</field>
-        <field name="model">product.vehicle.image</field>
-        <field name="arch" type="xml">
-            <list string="Vehicle Images">
-                <!-- Use the 'image' field to display the image -->
-                <field name="image" widget="image" options="{'preview_image': 'image'}" width="100"/>
-                <field name="name"/>
-            </list>
-        </field>
-    </record>
-
     <!-- This view is used to create and edit vehicle records -->
     <record id="product_vehicle_form_view" model="ir.ui.view">
         <field name="name">product.vehicle.form</field>
@@ -109,33 +96,27 @@
         <field name="arch" type="xml">
             <form string="Vehicle Products">
                 <sheet>
-                    <!-- Group with basic fields -->
                     <group>
-                        <field name="name" placeholder="Ingrese el nombre del vehículo"/>
+                        <field name="name" placeholder="Insert vehicle name"/>
                         <field name="description"/>
-                    </group>
-                    <!-- Group with additional information -->
-                    <group>
                         <field name="is_published" widget="boolean_toggle"/>
                         <field name="products_count" readonly="1"/>
                     </group>
-                    <!-- Notebook is used to group related fields into tabs -->
-                    <notebook>
-                        <page string="Imágenes">
-                            <!-- Reference the previously defined list view to display images in 'list,form' mode -->
-                            <field name="image_ids">
-                                <list view_id="view_product_vehicle_image_list"/>
-                            </field>
-                        </page>
-                        <page string="Productos Relacionados">
-                            <field name="product_ids" mode="list,form"/>
-                        </page>
-                    </notebook>
+                    <group name="product_template_images" string="Images of vehicle">
+                        <field
+                            name="product_template_image_ids"
+                            colspan="2"
+                            widget="x2_many_media_viewer"
+                            options="{'convert_to_webp': True}"
+                            mode="kanban"
+                            context="{'default_name': name}"
+                            add-label="Add Images"
+                            nolabel="1"/>
+                    </group>
                 </sheet>
             </form>
         </field>
     </record>
-
 
     <!-- Window action to open the vehicle list -->
     <record id="action_product_vehicle" model="ir.actions.act_window">
@@ -149,7 +130,7 @@
     <menuitem id="menu_product_vehicle"
               name="Vehicles"
               action="desguace_website_sale_product_vehicle.action_product_vehicle"
-              parent="stock.menu_stock_inventory_control"
-              sequence="200"
+              parent="website_sale.menu_ecommerce"
+              groups="base.group_user"
     />
 </odoo>

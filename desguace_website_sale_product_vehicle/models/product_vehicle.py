@@ -16,10 +16,16 @@ class ProductVehicle(models.Model):
     description = fields.Text(
         translate=True
     )
-    image_ids = fields.One2many(
-        comodel_name='product.vehicle.image',
-        inverse_name='product_vehicle_image_id',
-        string='Images'
+    product_template_image_ids = fields.One2many(
+        comodel_name='product.image',
+        related='product_template_id.product_template_image_ids',
+        string='Images',
+        readonly=False,
+    )
+    product_template_id = fields.Many2one(
+        'product.template',
+        string='Product Template Reference',
+        auto_join=True,
     )
     product_ids = fields.One2many(
         comodel_name='product.template',
@@ -47,3 +53,13 @@ class ProductVehicle(models.Model):
         for vehicle in self:
             vehicle.products_count = data.get(vehicle.id, 0)
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Crear un product.template vacío para cada vehículo
+        for vals in vals_list:
+            template = self.env['product.template'].create({
+                'name': vals.get('name', 'New Vehicle'),
+                'type': 'service',  # o el tipo que prefieras
+            })
+            vals['product_template_id'] = template.id
+        return super().create(vals_list)
