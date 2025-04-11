@@ -21,10 +21,10 @@ class ProductVehicle(models.Model):
         inverse_name='product_vehicle_image_id',
         string='Images'
     )
-    product_ids = fields.Many2many(
-        comodel_name="product.template",
-        inverse_name="product_vehicle_id",
-        string="vehicle Products"
+    product_ids = fields.One2many(
+        comodel_name='product.template',
+        inverse_name='product_vehicle_id',
+        string='Products'
     )
     products_count = fields.Integer(
         string="Number of products",
