@@ -4,25 +4,23 @@
 {
     "name": "Product Vehicle",
     "category": "e-commerce",
-    "author": "Serpent Consulting Services Pvt. Ltd., "
-    "Tecnativa, "
-    "Odoo Community Association (OCA)",
-    "website": "https://github.com/OCA/e-commerce",
+    "author": "Danie Lopez, Jose Aguilar,"
+    "Xtendoo",
+    "website": "https://github.com/xtendoo-corporation/desguaces-condado",
     "version": "18.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["product_brand", "website_sale", "stock"],
+    "depends": [
+        "website_sale",
+        "stock",
+    ],
     "data": [
         "security/ir.model.access.csv",
         "data/website_menu.xml",
         "views/product_vehicle.xml",
-        #"views/product_brand_views.xml",
     ],
     "assets": {
         "web.assets_frontend": [
-            "/website_sale_product_brand/static/src/scss/website_sale_product_brand.scss"
-        ],
-        "web.assets_tests": [
-            "/website_sale_product_brand/static/src/js/tour.esm.js",
+            "/desguace_website_sale_product_vehicle/static/src/scss/desguace_website_sale_product_vehicle.scss"
         ],
     },
     "installable": True,
