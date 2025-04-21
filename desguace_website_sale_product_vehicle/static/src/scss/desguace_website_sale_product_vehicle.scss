@@ -23,3 +23,45 @@
     max-height: 400px;
     object-fit: cover;
 }
+
+.thumbnail-wrapper {
+    border: 2px solid transparent;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+        border-color: #0275d8;
+        transform: scale(1.05);
+    }
+}
+
+.thumbnail-img {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+
+    &.active {
+        border-color: #0275d8;
+    }
+
+    &:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+}
+
+#mainCarousel {
+    .carousel-item {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        background-color: rgba(0, 0, 0, 0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        margin: 0 10px;
+    }
+}

@@ -168,35 +168,46 @@
                 <div class="row">
                     <!-- Galería de imágenes -->
                     <div class="col-md-6">
-                        <div id="vehicleCarousel" class="carousel slide" data-ride="carousel">
+                        <!-- Carrusel principal -->
+                        <div id="mainCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 <t t-foreach="vehicle.product_image_ids" t-as="image">
                                     <div t-attf-class="carousel-item #{image_index == 0 and 'active' or ''}">
-                                        <img class="d-block w-100"
-                                             t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
+                                        <img t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
+                                             class="d-block w-100"
+                                             style="max-height: 400px; object-fit: cover;"
                                              t-att-alt="vehicle.name"/>
                                     </div>
                                 </t>
-                                <t t-if="not vehicle.product_image_ids">
-                                    <div class="carousel-item active">
-                                        <img class="d-block w-100"
-                                             src="/web/static/src/img/placeholder.png"
-                                             alt="Sin imagen"/>
-                                    </div>
-                                </t>
                             </div>
-                            <t t-if="len(vehicle.product_image_ids) > 1">
-                                <a class="carousel-control-prev" href="#vehicleCarousel" role="button"
-                                   data-slide="prev">
-                                    <span class="carousel-control-prev-icon"/>
-                                    <span class="sr-only">Anterior</span>
-                                </a>
-                                <a class="carousel-control-next" href="#vehicleCarousel" role="button"
-                                   data-slide="next">
-                                    <span class="carousel-control-next-icon"/>
-                                    <span class="sr-only">Siguiente</span>
-                                </a>
-                            </t>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel"
+                                    data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"/>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel"
+                                    data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"/>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+
+                        <!-- Miniaturas -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap justify-content-start">
+                                    <t t-foreach="vehicle.product_image_ids" t-as="image">
+                                        <div class="thumbnail-wrapper me-2 mb-2" style="width: 80px; height: 80px;">
+                                            <img t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
+                                                 t-att-data-bs-slide-to="image_index"
+                                                 t-att-class="'thumbnail-img w-100 h-100' + (image_index == 0 and ' active' or '')"
+                                                 data-bs-target="#mainCarousel"
+                                                 style="object-fit: cover; cursor: pointer;"
+                                                 t-att-alt="vehicle.name"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -250,13 +261,54 @@
                 </div>
             </div>
         </t>
+        <xpath expr="//templates" position="after">
+            <script type="text/javascript">
+                $(document).ready(function() {
+                // Inicializar el carrusel principal
+                var mainCarousel = new bootstrap.Carousel(document.getElementById('mainCarousel'), {
+                interval: false,
+                wrap: true
+                });
+
+                // Manejar clics en las miniaturas
+                $('.thumbnail-img').on('click', function(e) {
+                e.preventDefault();
+                var slideIndex = $(this).data('bs-slide-to');
+
+                // Forzar la actualización del carrusel incluso si es la misma diapositiva
+                if ($('.carousel-item').eq(slideIndex).hasClass('active')) {
+                $('.carousel-item').removeClass('active');
+                $('.carousel-item').eq(slideIndex).addClass('active');
+                }
+
+                mainCarousel.to(slideIndex);
+
+                // Actualizar estado activo de las miniaturas
+                $('.thumbnail-img').removeClass('active');
+                $(this).addClass('active');
+                });
+
+                // Actualizar miniaturas cuando cambie el carrusel principal
+                $('#mainCarousel').on('slid.bs.carousel', function(e) {
+                var activeIndex = $('.carousel-item.active').index();
+                $('.thumbnail-img').removeClass('active');
+                $('.thumbnail-img[data-bs-slide-to="' + activeIndex + '"]').addClass('active');
+                });
+
+                // Asegurarse de que la primera miniatura esté activa al cargar
+                $('.thumbnail-img[data-bs-slide-to="0"]').addClass('active');
+                });
+            </script>
+        </xpath>
     </template>
 
     <!-- Estilo CSS -->
     <record id="assets_frontend" model="ir.asset">
         <field name="name">Vehicle Frontend Assets</field>
         <field name="bundle">web.assets_frontend</field>
-        <field name="path">/desguace_website_sale_product_vehicle/static/src/scss/desguace_website_sale_product_vehicle.scss</field>
+        <field name="path">
+            /desguace_website_sale_product_vehicle/static/src/scss/desguace_website_sale_product_vehicle.scss
+        </field>
     </record>
 
 
