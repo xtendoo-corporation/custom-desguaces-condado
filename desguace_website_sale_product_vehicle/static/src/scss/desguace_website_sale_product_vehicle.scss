@@ -5,3 +5,21 @@
         width: 200px;
     }
 }
+
+.vehicle_item_image {
+    max-height: 200px;
+    object-fit: cover;
+}
+
+.vehicle_item {
+    transition: transform .2s;
+}
+
+.vehicle_item:hover {
+    transform: scale(1.05);
+}
+
+#vehicleCarousel .carousel-item img {
+    max-height: 400px;
+    object-fit: cover;
+}

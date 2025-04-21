@@ -77,6 +77,189 @@
     <!--    </template>-->
 
 
+    <!-- Template para la lista de vehículos -->
+    <template id="vehicle_list_template" name="Product Vehicles">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Vehículos</t>
+            <div id="wrap" t-attf-class="wrapper">
+                <div class="container">
+                    <!-- Barra de búsqueda -->
+                    <div class="row">
+                        <form action="/page/product_vehicles" class="form-horizontal mt32 col-lg-8" method="post">
+                            <div class="input-group" style="margin-left:60%;">
+                                <div class="col-lg-6">
+                                    <input type="text"
+                                           name="search"
+                                           class="form-control"
+                                           placeholder="Buscar vehículo..."
+                                           t-att-value="search"/>
+                                </div>
+                                <div class="col-lg-2">
+                                    <button class="btn btn-primary">Buscar</button>
+                                </div>
+                            </div>
+                            <input type="hidden"
+                                   name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                        </form>
+                    </div>
+                    <br/>
+                    <section>
+                        <t t-if="vehicles">
+                            <div class="row">
+                                <t t-foreach="vehicles" t-as="vehicle">
+                                    <div class="card border-0 col-lg-3 col-md-6 mb-4 text-center vehicle_item">
+                                        <a t-att-href="'/vehicle/%s' % vehicle.id">
+                                            <t t-if="vehicle.product_image_ids">
+                                                <img class="card-img-top img-fluid vehicle_item_image"
+                                                     t-att-src="'/web/image/product.image/%s/image_1920' % vehicle.product_image_ids[0].id"
+                                                     t-att-alt="vehicle.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <img class="card-img-top img-fluid vehicle_item_image"
+                                                     src="/web/static/src/img/placeholder.png"
+                                                     alt="Sin imagen"/>
+                                            </t>
+                                            <div class="card-body border-0">
+                                                <h5 class="card-title">
+                                                    <t t-esc="vehicle.name"/>
+                                                </h5>
+                                                <div class="badge badge-primary">
+                                                    <t t-esc="vehicle.products_count"/>
+                                                    productos
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-if="not vehicles">
+                            <div class="text-center text-muted">
+                                <h3 class="css_editable_display">No se encontraron vehículos.</h3>
+                                <t t-if="search">
+                                    <p>No se encontraron vehículos que coincidan con "<t t-esc="search"/>"
+                                    </p>
+                                    <a href="/page/product_vehicles" class="btn btn-secondary">Ver todos los vehículos
+                                    </a>
+                                </t>
+                            </div>
+                        </t>
+                    </section>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template para el detalle del vehículo -->
+    <template id="vehicle_detail_template" name="Vehicle Detail">
+        <t t-call="website.layout">
+            <div class="container mt-4">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/page/product_vehicles">Vehículos</a>
+                        </li>
+                        <li class="breadcrumb-item active" t-esc="vehicle.name"/>
+                    </ol>
+                </nav>
+
+                <div class="row">
+                    <!-- Galería de imágenes -->
+                    <div class="col-md-6">
+                        <div id="vehicleCarousel" class="carousel slide" data-ride="carousel">
+                            <div class="carousel-inner">
+                                <t t-foreach="vehicle.product_image_ids" t-as="image">
+                                    <div t-attf-class="carousel-item #{image_index == 0 and 'active' or ''}">
+                                        <img class="d-block w-100"
+                                             t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
+                                             t-att-alt="vehicle.name"/>
+                                    </div>
+                                </t>
+                                <t t-if="not vehicle.product_image_ids">
+                                    <div class="carousel-item active">
+                                        <img class="d-block w-100"
+                                             src="/web/static/src/img/placeholder.png"
+                                             alt="Sin imagen"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <t t-if="len(vehicle.product_image_ids) > 1">
+                                <a class="carousel-control-prev" href="#vehicleCarousel" role="button"
+                                   data-slide="prev">
+                                    <span class="carousel-control-prev-icon"/>
+                                    <span class="sr-only">Anterior</span>
+                                </a>
+                                <a class="carousel-control-next" href="#vehicleCarousel" role="button"
+                                   data-slide="next">
+                                    <span class="carousel-control-next-icon"/>
+                                    <span class="sr-only">Siguiente</span>
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Información del vehículo -->
+                    <div class="col-md-6">
+                        <h1 t-field="vehicle.name"/>
+                        <div class="my-4" t-field="vehicle.description"/>
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle"/>
+                            <span t-esc="vehicle.products_count"/>
+                            productos disponibles
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Productos relacionados -->
+                <div class="mt-5">
+                    <h2 class="mb-4">Productos Relacionados</h2>
+                    <div class="row">
+                        <t t-foreach="vehicle.product_ids" t-as="product">
+                            <div class="col-sm-6 col-lg-4 mb-4">
+                                <form action="/shop/cart/update" method="post" class="js_add_cart_variants">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="card h-100">
+                                        <t t-if="product.image_1920">
+                                            <a t-att-href="'/shop/product/%s' % product.id">
+                                                <img class="card-img-top"
+                                                     t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
+                                                     t-att-alt="product.name"/>
+                                            </a>
+                                        </t>
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <a t-att-href="'/shop/product/%s' % product.id"
+                                                   t-field="product.name"/>
+                                            </h5>
+                                            <div class="product_price mt-2">
+                                                <span t-field="product.list_price"
+                                                      t-options='{"widget": "monetary"}'/>
+                                            </div>
+                                            <a t-att-href="'/shop/product/%s' % product.id"
+                                               class="btn btn-primary mt-2">
+                                                Ver producto
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Estilo CSS -->
+    <record id="assets_frontend" model="ir.asset">
+        <field name="name">Vehicle Frontend Assets</field>
+        <field name="bundle">web.assets_frontend</field>
+        <field name="path">/desguace_website_sale_product_vehicle/static/src/scss/desguace_website_sale_product_vehicle.scss</field>
+    </record>
+
+
     <!-- List view for product.vehicle -->
     <record id="product_vehicle_list_view" model="ir.ui.view">
         <field name="name">product.vehicle.list</field>

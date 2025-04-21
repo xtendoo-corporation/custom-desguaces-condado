@@ -96,3 +96,36 @@ class WebsiteSale(WebsiteSale):
         if post.get("search"):
             values.update({"search": post.get("search")})
         return request.render("website_sale_product_brand.product_brands", values)
+
+    @http.route(["/page/product_vehicles"], type="http", auth="public", website=True)
+    def product_vehicles(self, **post):
+        Vehicle = request.env['product.vehicle']
+        domain = [('is_published', '=', True)]
+
+        # Búsqueda por nombre si se proporciona
+        if post.get("search"):
+            domain = expression.AND([
+                domain,
+                [('name', 'ilike', post.get("search"))]
+            ])
+
+        vehicles = Vehicle.sudo().search(domain)
+        keep = QueryURL("/page/product_vehicles", search=post.get("search", ""))
+
+        values = {
+            'vehicles': vehicles,
+            'keep': keep,
+            'search': post.get("search", ""),
+        }
+        return request.render("desguace_website_sale_product_vehicle.vehicle_list_template", values)
+
+    @http.route(['/vehicle/<model("product.vehicle"):vehicle>'], type="http", auth="public", website=True)
+    def vehicle_detail(self, vehicle, **post):
+        if not vehicle.exists() or not vehicle.is_published:
+            return request.redirect('/page/product_vehicles')
+
+        values = {
+            'vehicle': vehicle,
+            'products': vehicle.product_ids,
+        }
+        return request.render("desguace_website_sale_product_vehicle.vehicle_detail_template", values)
