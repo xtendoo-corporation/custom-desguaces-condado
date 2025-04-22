@@ -220,6 +220,10 @@
                             <span t-esc="vehicle.products_count"/>
                             productos disponibles
                         </div>
+                        <a t-att-href="'/contactus?vehicle_id=%s&amp;vehicle_name=%s' % (vehicle.id, vehicle.name)" class="btn btn-success btn-lg btn-block mt-4">
+                            <i class="fa fa-envelope me-2"></i>
+                            Solicitar información
+                        </a>
                     </div>
                 </div>
 
