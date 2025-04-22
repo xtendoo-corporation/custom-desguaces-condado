@@ -12,13 +12,17 @@ class ProductVehicle(models.Model):
         string="Vehicle Name",
         required=True
     )
-    description = fields.Text(
-        translate=True
+    description = fields.Html(
+        string="Description",
+        translate=True,
+        sanitize=True,
+        sanitize_tags=True,
+        sanitize_attributes=True
     )
     product_template_id = fields.Many2one(
         comodel_name='product.template',
         string='Product Template Reference',
-        auto_join=True,
+        auto_join=True
     )
     product_ids = fields.One2many(
         comodel_name='product.template',
