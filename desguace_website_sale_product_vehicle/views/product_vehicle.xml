@@ -77,13 +77,13 @@
     <!--    </template>-->
 
 
-    <!-- Template para la lista de vehículos -->
+    <!-- Template for the vehicle list page -->
     <template id="vehicle_list_template" name="Product Vehicles">
         <t t-call="website.layout">
-            <t t-set="additional_title">Vehículos</t>
+            <t t-set="additional_title">Vehicles</t>
             <div id="wrap" t-attf-class="wrapper">
                 <div class="container">
-                    <!-- Barra de búsqueda -->
+                    <!-- Breadcrumb -->
                     <div class="row">
                         <form action="/page/product_vehicles" class="form-horizontal mt32 col-lg-8" method="post">
                             <div class="input-group" style="margin-left:60%;">
@@ -91,11 +91,11 @@
                                     <input type="text"
                                            name="search"
                                            class="form-control"
-                                           placeholder="Buscar vehículo..."
+                                           placeholder="Search vehicles..."
                                            t-att-value="search"/>
                                 </div>
                                 <div class="col-lg-2">
-                                    <button class="btn btn-primary">Buscar</button>
+                                    <button class="btn btn-primary">Search</button>
                                 </div>
                             </div>
                             <input type="hidden"
@@ -136,11 +136,11 @@
                         </t>
                         <t t-if="not vehicles">
                             <div class="text-center text-muted">
-                                <h3 class="css_editable_display">No se encontraron vehículos.</h3>
+                                <h3 class="css_editable_display">Not found vehicles...</h3>
                                 <t t-if="search">
-                                    <p>No se encontraron vehículos que coincidan con "<t t-esc="search"/>"
+                                    <p>Not found vehicles for the search: "<t t-esc="search"/>"
                                     </p>
-                                    <a href="/page/product_vehicles" class="btn btn-secondary">Ver todos los vehículos
+                                    <a href="/page/product_vehicles" class="btn btn-secondary">Show all vehicles
                                     </a>
                                 </t>
                             </div>
@@ -151,7 +151,7 @@
         </t>
     </template>
 
-    <!-- Template para el detalle del vehículo -->
+    <!-- Template for the vehicle detail page -->
     <template id="vehicle_detail_template" name="Vehicle Detail">
         <t t-call="website.layout">
             <div class="container mt-4">
@@ -166,9 +166,8 @@
                 </nav>
 
                 <div class="row">
-                    <!-- Galería de imágenes -->
+                    <!-- Image carousel -->
                     <div class="col-md-6">
-                        <!-- Carrusel principal -->
                         <div id="mainCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 <t t-foreach="vehicle.product_image_ids" t-as="image">
@@ -192,7 +191,7 @@
                             </button>
                         </div>
 
-                        <!-- Miniaturas -->
+                        <!-- Miniatures -->
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex flex-wrap justify-content-start">
@@ -211,38 +210,42 @@
                         </div>
                     </div>
 
-                    <!-- Información del vehículo -->
+                    <!-- Information about the vehicle -->
                     <div class="col-md-6">
                         <h1 t-field="vehicle.name"/>
                         <div class="my-4" t-field="vehicle.description"/>
                         <div class="alert alert-info">
                             <i class="fa fa-info-circle"/>
                             <span t-esc="vehicle.products_count"/>
-                            productos disponibles
+                            available pieces
                         </div>
-                        <a t-att-href="'/contactus?vehicle_id=%s&amp;vehicle_name=%s' % (vehicle.id, vehicle.name)" class="btn btn-success btn-lg btn-block mt-4">
+                        <!-- Information button -->
+                        <a t-att-href="'/contactus?vehicle_id=%s&amp;vehicle_name=%s' % (vehicle.id, vehicle.name)"
+                           class="btn btn-success btn-lg btn-block mt-4">
                             <i class="fa fa-envelope me-2"></i>
-                            Solicitar información
+                            Request information
                         </a>
                     </div>
                 </div>
 
-                <!-- Productos relacionados -->
+                <!-- Related products -->
                 <div class="mt-5">
-                    <h2 class="mb-4">Productos Relacionados</h2>
+                    <h2 class="mb-4">Related Pieces</h2>
                     <div class="row">
                         <t t-foreach="vehicle.product_ids" t-as="product">
                             <div class="col-sm-6 col-lg-4 mb-4">
                                 <form action="/shop/cart/update" method="post" class="js_add_cart_variants">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                     <div class="card h-100">
-                                        <t t-if="product.image_1920">
-                                            <a t-att-href="'/shop/product/%s' % product.id">
-                                                <img class="card-img-top"
-                                                     t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
-                                                     t-att-alt="product.name"/>
-                                            </a>
-                                        </t>
+                                        <div class="product-image-container">
+                                            <t t-if="product.image_1920">
+                                                <a t-att-href="'/shop/product/%s' % product.id">
+                                                    <img class="card-img-top product-thumbnail"
+                                                         t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
+                                                         t-att-alt="product.name"/>
+                                                </a>
+                                            </t>
+                                        </div>
                                         <div class="card-body">
                                             <h5 class="card-title">
                                                 <a t-att-href="'/shop/product/%s' % product.id"
@@ -254,7 +257,7 @@
                                             </div>
                                             <a t-att-href="'/shop/product/%s' % product.id"
                                                class="btn btn-primary mt-2">
-                                                Ver producto
+                                                View piece
                                             </a>
                                         </div>
                                     </div>
@@ -268,18 +271,18 @@
         <xpath expr="//templates" position="after">
             <script type="text/javascript">
                 $(document).ready(function() {
-                // Inicializar el carrusel principal
+                // Iniciate the main carousel
                 var mainCarousel = new bootstrap.Carousel(document.getElementById('mainCarousel'), {
                 interval: false,
                 wrap: true
                 });
 
-                // Manejar clics en las miniaturas
+                // Handler for thumbnail click
                 $('.thumbnail-img').on('click', function(e) {
                 e.preventDefault();
                 var slideIndex = $(this).data('bs-slide-to');
 
-                // Forzar la actualización del carrusel incluso si es la misma diapositiva
+                // Force the main carousel to the clicked thumbnail
                 if ($('.carousel-item').eq(slideIndex).hasClass('active')) {
                 $('.carousel-item').removeClass('active');
                 $('.carousel-item').eq(slideIndex).addClass('active');
@@ -287,19 +290,19 @@
 
                 mainCarousel.to(slideIndex);
 
-                // Actualizar estado activo de las miniaturas
+                // Update the active thumbnail
                 $('.thumbnail-img').removeClass('active');
                 $(this).addClass('active');
                 });
 
-                // Actualizar miniaturas cuando cambie el carrusel principal
+                // Update the active thumbnail when the main carousel slides
                 $('#mainCarousel').on('slid.bs.carousel', function(e) {
                 var activeIndex = $('.carousel-item.active').index();
                 $('.thumbnail-img').removeClass('active');
                 $('.thumbnail-img[data-bs-slide-to="' + activeIndex + '"]').addClass('active');
                 });
 
-                // Asegurarse de que la primera miniatura esté activa al cargar
+                // Ensure the first thumbnail is active on page load
                 $('.thumbnail-img[data-bs-slide-to="0"]').addClass('active');
                 });
             </script>
@@ -353,14 +356,14 @@
                     </group>
                     <group name="product_template_images" string="Images of vehicle">
                         <field
-                            name="product_image_ids"
-                            colspan="2"
-                            widget="x2_many_media_viewer"
-                            options="{'convert_to_webp': True}"
-                            mode="kanban"
-                            context="{'default_name': name}"
-                            add-label="Add Images"
-                            nolabel="1"/>
+                                name="product_image_ids"
+                                colspan="2"
+                                widget="x2_many_media_viewer"
+                                options="{'convert_to_webp': True}"
+                                mode="kanban"
+                                context="{'default_name': name}"
+                                add-label="Add Images"
+                                nolabel="1"/>
                     </group>
                 </sheet>
             </form>

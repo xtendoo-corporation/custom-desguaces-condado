@@ -65,3 +65,15 @@
         margin: 0 10px;
     }
 }
+.product-image-container {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+
+    .product-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+}
