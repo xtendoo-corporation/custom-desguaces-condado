@@ -219,92 +219,78 @@
                             <span t-esc="vehicle.products_count"/>
                             available pieces
                         </div>
-                         <a t-att-href="'/contactus?subject=%s' % ('Consulta sobre ' + vehicle.name)" class="btn btn-primary o_btn_action mt-4">
+                        <a t-att-href="'/contactus?subject=%s' % ('Consulta sobre ' + vehicle.name)"
+                           class="btn btn-primary o_btn_action mt-4">
                             <i class="fa fa-envelope me-2"></i>
-                            Solicitar información
+                            Request information
                         </a>
                     </div>
                 </div>
 
                 <!-- Related products -->
-                <div class="mt-5">
-                    <h2 class="mb-4">Related Pieces</h2>
-                    <div class="row">
-                        <t t-foreach="vehicle.product_ids" t-as="product">
-                            <div class="col-sm-6 col-lg-4 mb-4">
-                                <form action="/shop/cart/update" method="post" class="js_add_cart_variants">
-                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                    <div class="card h-100">
-                                        <div class="product-image-container">
-                                            <t t-if="product.image_1920">
-                                                <a t-att-href="'/shop/product/%s' % product.id">
-                                                    <img class="card-img-top product-thumbnail"
-                                                         t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
-                                                         t-att-alt="product.name"/>
-                                                </a>
-                                            </t>
-                                        </div>
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <a t-att-href="'/shop/product/%s' % product.id"
-                                                   t-field="product.name"/>
-                                            </h5>
-                                            <div class="product_price mt-2">
-                                                <span t-field="product.list_price"
-                                                      t-options='{"widget": "monetary"}'/>
+                <div class="mt-5 p-4" style="background-color: #faf7f7; border-radius: 10px;">
+                    <h4 class="mb-4">Related Pieces</h4>
+                    <div class="container oe_website_sale">
+                        <div class="row">
+                            <div class="col-12">
+                                <div t-if="vehicle.product_ids" class="o_wsale_products_grid_table_wrapper">
+                                    <section class="o_wsale_products_grid_table grid"
+                                             t-attf-style="--o-wsale-products-grid-gap: 0.5rem; --o-wsale-ppr: 4;">
+                                        <t t-foreach="vehicle.product_ids" t-as="product">
+                                            <div class="oe_product g-col-6 g-col-md-4 g-col-lg-3">
+                                                <div class="o_wsale_product_grid_wrapper position-relative h-100">
+                                                    <form action="/shop/cart/update" method="post" class="h-100">
+                                                        <input type="hidden" name="csrf_token"
+                                                               t-att-value="request.csrf_token()"/>
+                                                        <div class="card h-100">
+                                                            <!-- Imagen del producto -->
+                                                            <div class="o_wsale_product_image position-relative flex-grow-0">
+                                                                <a t-att-href="'/shop/product/%s' % product.id"
+                                                                   class="d-block h-100">
+                                                                    <img t-if="product.image_1920"
+                                                                         t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
+                                                                         t-att-alt="product.name"
+                                                                         class="img-fluid h-100 w-100"
+                                                                         style="object-fit: contain; max-height: 200px;"/>
+                                                                </a>
+                                                            </div>
+                                                            <!-- Información del producto -->
+                                                            <div class="card-body d-flex flex-column justify-content-between p-2">
+                                                                <div>
+                                                                    <h6 class="card-title mb-0">
+                                                                        <a t-att-href="'/shop/product/%s' % product.id"
+                                                                           t-field="product.name"
+                                                                           class="text-decoration-none"/>
+                                                                    </h6>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                                                    <div class="product_price">
+                                                                        <span t-field="product.list_price"
+                                                                              t-options='{"widget": "monetary"}'
+                                                                              class="fw-bold"/>
+                                                                    </div>
+                                                                    <a t-att-href="'/shop/product/%s' % product.id"
+                                                                       class="btn btn-primary o_btn_action mt-0">
+                                                                        View
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
-                                            <a t-att-href="'/shop/product/%s' % product.id"
-                                               class="btn btn-primary mt-2">
-                                                View piece
-                                            </a>
-                                        </div>
-                                    </div>
-                                </form>
+                                        </t>
+                                    </section>
+                                </div>
+                                <div t-else="" class="text-center text-muted py-4">
+                                    <h3 class="css_editable_display">No hay piezas relacionadas disponibles</h3>
+                                </div>
                             </div>
-                        </t>
+                        </div>
                     </div>
                 </div>
             </div>
         </t>
-        <xpath expr="//templates" position="after">
-            <script type="text/javascript">
-                $(document).ready(function() {
-                // Iniciate the main carousel
-                var mainCarousel = new bootstrap.Carousel(document.getElementById('mainCarousel'), {
-                interval: false,
-                wrap: true
-                });
-
-                // Handler for thumbnail click
-                $('.thumbnail-img').on('click', function(e) {
-                e.preventDefault();
-                var slideIndex = $(this).data('bs-slide-to');
-
-                // Force the main carousel to the clicked thumbnail
-                if ($('.carousel-item').eq(slideIndex).hasClass('active')) {
-                $('.carousel-item').removeClass('active');
-                $('.carousel-item').eq(slideIndex).addClass('active');
-                }
-
-                mainCarousel.to(slideIndex);
-
-                // Update the active thumbnail
-                $('.thumbnail-img').removeClass('active');
-                $(this).addClass('active');
-                });
-
-                // Update the active thumbnail when the main carousel slides
-                $('#mainCarousel').on('slid.bs.carousel', function(e) {
-                var activeIndex = $('.carousel-item.active').index();
-                $('.thumbnail-img').removeClass('active');
-                $('.thumbnail-img[data-bs-slide-to="' + activeIndex + '"]').addClass('active');
-                });
-
-                // Ensure the first thumbnail is active on page load
-                $('.thumbnail-img[data-bs-slide-to="0"]').addClass('active');
-                });
-            </script>
-        </xpath>
     </template>
 
     <!-- Estilo CSS -->
@@ -384,5 +370,4 @@
               groups="base.group_user"
     />
 </odoo>
-
 
