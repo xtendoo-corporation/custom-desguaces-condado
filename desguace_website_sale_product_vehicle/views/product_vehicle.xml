@@ -219,17 +219,11 @@
                             <span t-esc="vehicle.products_count"/>
                             available pieces
                         </div>
-                         <a t-att-href="'/contactus?vehicle_id=%s&amp;vehicle_name=%s' % (vehicle.id, vehicle.name)" class="btn btn-primary o_btn_action mt-4">
+                         <a t-att-href="'/contactus?subject=%s' % ('Consulta sobre ' + vehicle.name)" class="btn btn-primary o_btn_action mt-4">
                             <i class="fa fa-envelope me-2"></i>
                             Solicitar información
                         </a>
-
-
                     </div>
-                        <!-- <a t-att-href="'/contactus?%s' % keep_query('vehicle_id=%s&amp;subject=%s' % (vehicle.id, 'Consulta sobre ' + vehicle.name))" class="btn btn-primary o_btn_action btn-lg w-100 mt-4">
-                            <i class="fa fa-envelope me-2"/>
-                            Solicitar información
-                        </a>  No borrar la ruta nos puede servir mas tarde-->
                 </div>
 
                 <!-- Related products -->
