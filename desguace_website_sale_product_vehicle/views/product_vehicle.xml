@@ -171,7 +171,7 @@
                         <div id="mainCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 <t t-foreach="vehicle.product_image_ids" t-as="image">
-                                    <div t-attf-class="carousel-item #{image_index == 0 and 'active' or ''}">
+                                    <div t-att-class="'carousel-item' + (image_index == 0 and ' active' or '')" t-att-data-index="str(image_index)">
                                         <img t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
                                              class="d-block w-100"
                                              style="max-height: 400px; object-fit: cover;"
@@ -191,10 +191,10 @@
                             </button>
                         </div>
 
-                        <!-- Miniatures -->
+                        <!-- Miniaturas -->
                         <div class="row">
                             <div class="col-12">
-                                <div class="d-flex flex-wrap justify-content-start">
+                                <div id="carousel-thumbnails" class="d-flex flex-wrap justify-content-start">
                                     <t t-foreach="vehicle.product_image_ids" t-as="image">
                                         <div class="thumbnail-wrapper me-2 mb-2" style="width: 80px; height: 80px;">
                                             <img t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
@@ -202,7 +202,8 @@
                                                  t-att-class="'thumbnail-img w-100 h-100' + (image_index == 0 and ' active' or '')"
                                                  data-bs-target="#mainCarousel"
                                                  style="object-fit: cover; cursor: pointer;"
-                                                 t-att-alt="vehicle.name"/>
+                                                 t-att-alt="vehicle.name"
+                                                 t-att-data-slide-index="str(image_index)"/>
                                         </div>
                                     </t>
                                 </div>
@@ -290,6 +291,76 @@
                     </div>
                 </div>
             </div>
+            <script type="text/javascript">
+               document.addEventListener('DOMContentLoaded', function() {
+
+                    const mainCarousel = document.getElementById('mainCarousel');
+                    const carouselItems = mainCarousel.querySelectorAll('.carousel-item');
+                    const thumbnails = document.querySelectorAll('#carousel-thumbnails img');
+                    const prevButton = mainCarousel.querySelector('.carousel-control-prev');
+                    const nextButton = mainCarousel.querySelector('.carousel-control-next');
+
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .carousel-item {
+                            transition: opacity 0.3s ease;
+                            opacity: 0;
+                            display: block !important;
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                        }
+                        .carousel-item.active {
+                            opacity: 1;
+                            position: relative;
+                        }
+                        .thumbnail-img {
+                            transition: all 0.2s ease;
+                            border: 2px solid transparent;
+                        }
+                        .thumbnail-img.active {
+                            border-color: #0d6efd;
+                        }
+                    `;
+                    document.head.appendChild(style);
+
+                    let activeIndex = 0;
+
+                    function showSlide(index) {
+                        if (index &lt; 0) index = carouselItems.length - 1;
+                        if (index >= carouselItems.length) index = 0;
+
+                        activeIndex = index;
+
+                        carouselItems.forEach((item, i) => {
+                            item.classList.toggle('active', i === activeIndex);
+                        });
+
+                        thumbnails.forEach((img, i) => {
+                            img.classList.toggle('active', i === activeIndex);
+                        });
+                    }
+
+                    prevButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        showSlide(activeIndex - 1);
+                    });
+
+                    nextButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        showSlide(activeIndex + 1);
+                    });
+
+                    thumbnails.forEach((thumbnail, index) => {
+                        thumbnail.addEventListener('click', function() {
+                            showSlide(index);
+                        });
+                    });
+
+                    showSlide(0);
+                });
+            </script>
         </t>
     </template>
 
