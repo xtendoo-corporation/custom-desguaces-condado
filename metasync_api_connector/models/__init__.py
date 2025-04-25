@@ -2,3 +2,9 @@ from . import stock_picking
 from . import product_category
 from . import product_template
 from . import product_public_category
+# from . import scrapyard_sale
+# from . import address_scrapyard_sale
+# from . import incident_scrapyard_sale
+# from . import line_scrapyard_sale
+# from . import view_scrapping_sale
+# from . import metasync_sale_api
