@@ -9,20 +9,20 @@ class CustomWebsiteForm(WebsiteSale):
     def contactus(self, **kwargs):
         values = {}
 
-        # Obtener parámetros de la URL
+        # Get URL parameters
         if request.params.get('subject'):
             values['subject'] = request.params.get('subject')
 
         if request.params.get('vehicle_id'):
             values['vehicle_id'] = request.params.get('vehicle_id')
-            values['description'] = f"Consulta sobre vehículo #{values['vehicle_id']}"
+            values['description'] = f"Query about vehicle #{values['vehicle_id']}"
 
         print("*"*80)
-        print("Valores obtenidos de la URL:", values)
+        print("Values obtained from URL:", values)
 
         response = super(CustomWebsiteForm, self).contactus(**kwargs)
 
-        # Si es un diccionario, actualizar con nuestros valores
+        # If it's a dictionary, update with our values
         if isinstance(response, dict):
             response.update(values)
 

@@ -99,7 +99,7 @@ class WebsiteSale(WebsiteSale):
         Vehicle = request.env['product.vehicle']
         domain = [('is_published', '=', True)]
 
-        # Búsqueda por nombre si se proporciona
+        # Search by name if provided
         if post.get("search"):
             domain = expression.AND([
                 domain,
@@ -124,7 +124,7 @@ class WebsiteSale(WebsiteSale):
         values = {
             'vehicle': vehicle,
             'products': vehicle.product_ids,
-            # Variables necesarias para el carrusel
+            # Variables needed for the carousel
             'product_images': vehicle.product_image_ids,
             'product_image_first': True,
             'ribbon': vehicle.website_ribbon_id,
