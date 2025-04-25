@@ -59,9 +59,9 @@ class ProductVehicle(models.Model):
             vehicle.products_count = data.get(vehicle.id, 0)
 
     state = fields.Selection([
-        ('published', 'Publicado'),
-        ('unpublished', 'No Publicado')
-    ], compute='_compute_state', store=False, string="Estado")
+        ('published', 'Published'),
+        ('unpublished', 'Unpublished')
+    ], compute='_compute_state', store=False, string="State")
 
     @api.depends('is_published')
     def _compute_state(self):
