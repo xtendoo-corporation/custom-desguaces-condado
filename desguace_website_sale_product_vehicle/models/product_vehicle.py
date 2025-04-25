@@ -41,6 +41,10 @@ class ProductVehicle(models.Model):
         inverse_name='product_vehicle_id',
         string='Images'
     )
+    website_ribbon_id = fields.Many2one(
+        string="Ribbon",
+        comodel_name='product.ribbon'
+    )
     @api.depends("product_ids")
     def _compute_products_count(self):
         product_model = self.env["product.template"]

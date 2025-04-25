@@ -154,213 +154,115 @@
     <!-- Template for the vehicle detail page -->
     <template id="vehicle_detail_template" name="Vehicle Detail">
         <t t-call="website.layout">
-            <div class="container mt-4">
-                <!-- Breadcrumb -->
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="/page/product_vehicles">Vehículos</a>
-                        </li>
-                        <li class="breadcrumb-item active" t-esc="vehicle.name"/>
-                    </ol>
-                </nav>
+            <div id="wrap" class="wrapper">
+                <div class="container">
+                    <!-- Migas de pan -->
+                    <div class="row mb-3">
+                        <ol class="breadcrumb bg-transparent">
+                            <li class="breadcrumb-item">
+                                <a href="/">Inicio</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="/page/product_vehicles">Vehículos</a>
+                            </li>
+                            <li class="breadcrumb-item active" t-esc="vehicle.name"/>
+                        </ol>
+                    </div>
 
-                <div class="row">
-                    <!-- Image carousel -->
-                    <div class="col-md-6">
-                        <div id="mainCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                                <t t-foreach="vehicle.product_image_ids" t-as="image">
-                                    <div t-att-class="'carousel-item' + (image_index == 0 and ' active' or '')" t-att-data-index="str(image_index)">
-                                        <img t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
-                                             class="d-block w-100"
-                                             style="max-height: 400px; object-fit: cover;"
-                                             t-att-alt="vehicle.name"/>
-                                    </div>
-                                </t>
-                            </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel"
-                                    data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"/>
-                                <span class="visually-hidden">Anterior</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel"
-                                    data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"/>
-                                <span class="visually-hidden">Siguiente</span>
-                            </button>
+                    <!-- Información del vehículo -->
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <!-- Carrusel estándar de Odoo -->
+                            <t t-call="website_sale.shop_product_carousel"/>
+                            <!-- Indicadores inferiores -->
+                            <t t-call="website_sale.carousel_product_indicators">
+                                <t t-set="indicators_div_class" t-value="'pt-2 overflow-hidden'"/>
+                            </t>
                         </div>
 
-                        <!-- Miniaturas -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div id="carousel-thumbnails" class="d-flex flex-wrap justify-content-start">
-                                    <t t-foreach="vehicle.product_image_ids" t-as="image">
-                                        <div class="thumbnail-wrapper me-2 mb-2" style="width: 80px; height: 80px;">
-                                            <img t-att-src="'/web/image/product.image/%s/image_1920' % image.id"
-                                                 t-att-data-bs-slide-to="image_index"
-                                                 t-att-class="'thumbnail-img w-100 h-100' + (image_index == 0 and ' active' or '')"
-                                                 data-bs-target="#mainCarousel"
-                                                 style="object-fit: cover; cursor: pointer;"
-                                                 t-att-alt="vehicle.name"
-                                                 t-att-data-slide-index="str(image_index)"/>
-                                        </div>
-                                    </t>
-                                </div>
+                        <!-- Information about the vehicle -->
+                        <div class="col-md-6">
+                            <h1 t-field="vehicle.name"/>
+                            <div class="my-4" t-field="vehicle.description"/>
+                            <div class="alert alert-info">
+                                <i class="fa fa-info-circle"/>
+                                <span t-esc="vehicle.products_count"/>
+                                available pieces
                             </div>
+                            <a t-att-href="'/contactus?subject=%s' % ('Consulta sobre ' + vehicle.name)"
+                               class="btn btn-primary o_btn_action mt-4">
+                                <i class="fa fa-envelope me-2"></i>
+                                Request information
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Information about the vehicle -->
-                    <div class="col-md-6">
-                        <h1 t-field="vehicle.name"/>
-                        <div class="my-4" t-field="vehicle.description"/>
-                        <div class="alert alert-info">
-                            <i class="fa fa-info-circle"/>
-                            <span t-esc="vehicle.products_count"/>
-                            available pieces
-                        </div>
-                        <a t-att-href="'/contactus?subject=%s' % ('Consulta sobre ' + vehicle.name)"
-                           class="btn btn-primary o_btn_action mt-4">
-                            <i class="fa fa-envelope me-2"></i>
-                            Request information
-                        </a>
-                    </div>
-                </div>
 
-                <!-- Related products -->
-                <div class="mt-5 p-4" style="background-color: #faf7f7; border-radius: 10px;">
-                    <h4 class="mb-4">Related Pieces</h4>
-                    <div class="container oe_website_sale">
-                        <div class="row">
-                            <div class="col-12">
-                                <div t-if="vehicle.product_ids" class="o_wsale_products_grid_table_wrapper">
-                                    <section class="o_wsale_products_grid_table grid"
-                                             t-attf-style="--o-wsale-products-grid-gap: 0.5rem; --o-wsale-ppr: 4;">
-                                        <t t-foreach="vehicle.product_ids" t-as="product">
-                                            <div class="oe_product g-col-6 g-col-md-4 g-col-lg-3">
-                                                <div class="o_wsale_product_grid_wrapper position-relative h-100">
-                                                    <form action="/shop/cart/update" method="post" class="h-100">
-                                                        <input type="hidden" name="csrf_token"
-                                                               t-att-value="request.csrf_token()"/>
-                                                        <div class="card h-100">
-                                                            <!-- Imagen del producto -->
-                                                            <div class="o_wsale_product_image position-relative flex-grow-0">
-                                                                <a t-att-href="'/shop/product/%s' % product.id"
-                                                                   class="d-block h-100">
-                                                                    <img t-if="product.image_1920"
-                                                                         t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
-                                                                         t-att-alt="product.name"
-                                                                         class="img-fluid h-100 w-100"
-                                                                         style="object-fit: contain; max-height: 200px;"/>
-                                                                </a>
-                                                            </div>
-                                                            <!-- Información del producto -->
-                                                            <div class="card-body d-flex flex-column justify-content-between p-2">
-                                                                <div>
-                                                                    <h6 class="card-title mb-0">
-                                                                        <a t-att-href="'/shop/product/%s' % product.id"
-                                                                           t-field="product.name"
-                                                                           class="text-decoration-none"/>
-                                                                    </h6>
-                                                                </div>
-                                                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                                                    <div class="product_price">
-                                                                        <span t-field="product.list_price"
-                                                                              t-options='{"widget": "monetary"}'
-                                                                              class="fw-bold"/>
-                                                                    </div>
+                    <!-- Listado de piezas destacadas -->
+                    <!-- Related products -->
+                    <div class="mt-5 p-4" style="background-color: #faf7f7; border-radius: 10px;">
+                        <h4 class="mb-4">Related Pieces</h4>
+                        <div class="container oe_website_sale">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div t-if="vehicle.product_ids" class="o_wsale_products_grid_table_wrapper">
+                                        <section class="o_wsale_products_grid_table grid"
+                                                 t-attf-style="--o-wsale-products-grid-gap: 0.5rem; --o-wsale-ppr: 4;">
+                                            <t t-foreach="vehicle.product_ids" t-as="product">
+                                                <div class="oe_product g-col-6 g-col-md-4 g-col-lg-3">
+                                                    <div class="o_wsale_product_grid_wrapper position-relative h-100">
+                                                        <form action="/shop/cart/update" method="post" class="h-100">
+                                                            <input type="hidden" name="csrf_token"
+                                                                   t-att-value="request.csrf_token()"/>
+                                                            <div class="card h-100">
+                                                                <!-- Imagen del producto -->
+                                                                <div class="o_wsale_product_image position-relative flex-grow-0">
                                                                     <a t-att-href="'/shop/product/%s' % product.id"
-                                                                       class="btn btn-primary o_btn_action mt-0">
-                                                                        View
+                                                                       class="d-block h-100">
+                                                                        <img t-if="product.image_1920"
+                                                                             t-att-src="'/web/image/product.template/%s/image_1920' % product.id"
+                                                                             t-att-alt="product.name"
+                                                                             class="img-fluid h-100 w-100"
+                                                                             style="object-fit: contain; max-height: 200px;"/>
                                                                     </a>
                                                                 </div>
+                                                                <!-- Información del producto -->
+                                                                <div class="card-body d-flex flex-column justify-content-between p-2">
+                                                                    <div>
+                                                                        <h6 class="card-title mb-0">
+                                                                            <a t-att-href="'/shop/product/%s' % product.id"
+                                                                               t-field="product.name"
+                                                                               class="text-decoration-none"/>
+                                                                        </h6>
+                                                                    </div>
+                                                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                                                        <div class="product_price">
+                                                                            <span t-field="product.list_price"
+                                                                                  t-options='{"widget": "monetary"}'
+                                                                                  class="fw-bold"/>
+                                                                        </div>
+                                                                        <a t-att-href="'/shop/product/%s' % product.id"
+                                                                           class="btn btn-primary o_btn_action mt-0">
+                                                                            View
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </form>
+                                                        </form>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </t>
-                                    </section>
-                                </div>
-                                <div t-else="" class="text-center text-muted py-4">
-                                    <h3 class="css_editable_display">No hay piezas relacionadas disponibles</h3>
+                                            </t>
+                                        </section>
+                                    </div>
+                                    <div t-else="" class="text-center text-muted py-4">
+                                        <h3 class="css_editable_display">No hay piezas relacionadas disponibles</h3>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <script type="text/javascript">
-               document.addEventListener('DOMContentLoaded', function() {
-
-                    const mainCarousel = document.getElementById('mainCarousel');
-                    const carouselItems = mainCarousel.querySelectorAll('.carousel-item');
-                    const thumbnails = document.querySelectorAll('#carousel-thumbnails img');
-                    const prevButton = mainCarousel.querySelector('.carousel-control-prev');
-                    const nextButton = mainCarousel.querySelector('.carousel-control-next');
-
-                    const style = document.createElement('style');
-                    style.textContent = `
-                        .carousel-item {
-                            transition: opacity 0.3s ease;
-                            opacity: 0;
-                            display: block !important;
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                        }
-                        .carousel-item.active {
-                            opacity: 1;
-                            position: relative;
-                        }
-                        .thumbnail-img {
-                            transition: all 0.2s ease;
-                            border: 2px solid transparent;
-                        }
-                        .thumbnail-img.active {
-                            border-color: #0d6efd;
-                        }
-                    `;
-                    document.head.appendChild(style);
-
-                    let activeIndex = 0;
-
-                    function showSlide(index) {
-                        if (index &lt; 0) index = carouselItems.length - 1;
-                        if (index >= carouselItems.length) index = 0;
-
-                        activeIndex = index;
-
-                        carouselItems.forEach((item, i) => {
-                            item.classList.toggle('active', i === activeIndex);
-                        });
-
-                        thumbnails.forEach((img, i) => {
-                            img.classList.toggle('active', i === activeIndex);
-                        });
-                    }
-
-                    prevButton.addEventListener('click', e => {
-                        e.preventDefault();
-                        showSlide(activeIndex - 1);
-                    });
-
-                    nextButton.addEventListener('click', e => {
-                        e.preventDefault();
-                        showSlide(activeIndex + 1);
-                    });
-
-                    thumbnails.forEach((thumbnail, index) => {
-                        thumbnail.addEventListener('click', function() {
-                            showSlide(index);
-                        });
-                    });
-
-                    showSlide(0);
-                });
-            </script>
         </t>
     </template>
 
@@ -407,6 +309,7 @@
                     <group>
                         <field name="name" placeholder="Insert vehicle name"/>
                         <field name="description"/>
+                        <field name="website_ribbon_id"/>
                         <field name="products_count" readonly="1"/>
                     </group>
                     <group name="product_template_images" string="Images of vehicle">

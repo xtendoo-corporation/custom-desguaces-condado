@@ -124,5 +124,11 @@ class WebsiteSale(WebsiteSale):
         values = {
             'vehicle': vehicle,
             'products': vehicle.product_ids,
+            # Variables necesarias para el carrusel
+            'product_images': vehicle.product_image_ids,
+            'product_image_first': True,
+            'ribbon': vehicle.website_ribbon_id,
+            'text_color': False,
+            'bg_color': False,
         }
         return request.render("desguace_website_sale_product_vehicle.vehicle_detail_template", values)
