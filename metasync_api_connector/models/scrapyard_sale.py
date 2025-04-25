@@ -139,11 +139,13 @@ class ScrapyardSale(models.Model):
         inverse_name='sale_id',
         string='Lines'
     )
-    # document_ids = fields.One2many(
-    #     comodel_name='sale.document',
-    #     inverse_name='sale_id',
-    #     string='Documents'
-    # )
+    document_ids = fields.One2many(
+        comodel_name='ir.attachment',
+        inverse_name='res_id',
+        string='Documents',
+        domain=[('res_model', '=', 'scrapyard.sale')],
+        auto_join=True
+    )
     incident_ids = fields.One2many(
         comodel_name='incident.scrapyard.sale',
         inverse_name='sale_id',
