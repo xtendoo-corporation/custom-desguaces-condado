@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_sync" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.sync</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_cancel']" position="after">
+                <button
+                    name="action_synchronize_order"
+                    string="Synchronize Order"
+                    type="object"
+                    class="btn-secondary"
+                    invisible="not state in ['draft', 'sent', 'sale']"
+                />
+            </xpath>
+            <field name="state" position="before">
+                <field name="is_synchronized" invisible="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>
