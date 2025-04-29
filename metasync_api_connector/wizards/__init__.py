@@ -1,2 +1,3 @@
 from . import recover_changes_stock_metasync_wizard
 from . import recover_changes_stock_company_metasync_wizard
+from . import send_order_metasync_wizard

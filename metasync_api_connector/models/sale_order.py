@@ -41,7 +41,7 @@ class SaleOrder(models.Model):
 
         order_data = {
             "id": 0,
-            "idVendedor": self.user_id.id,
+            "idVendedor": 1476,
             "idCliente": self.partner_id.email,
             "codigo": self.name,
             "codigoCrvnet": "",
@@ -82,15 +82,24 @@ class SaleOrder(models.Model):
             "documentosTotal": 0
         }
 
-        print("\n=== JSON DEL PEDIDO ===")
-        print(json.dumps(order_data, indent=2, ensure_ascii=False))
-        print("=====================\n")
+        # print("\n=== JSON DEL PEDIDO ===")
+        # print(json.dumps(order_data, indent=2, ensure_ascii=False))
+        # print("=====================\n")
 
         self.env.context = dict(self.env.context)
         self.env.context['sale_order_json'] = json.dumps(order_data)
 
         self.is_synchronized = True
-        return True
+        return {
+            'name': 'Enviar a MetaSync',
+            'type': 'ir.actions.act_window',
+            'res_model': 'send.order.metasync.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_order_id': self.id,
+            }
+        }
 
     def _prepare_partner_data(self, partner):
         return {
