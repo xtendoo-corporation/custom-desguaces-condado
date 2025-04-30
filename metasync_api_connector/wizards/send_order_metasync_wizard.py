@@ -53,15 +53,31 @@ class SendOrderMetasyncWizard(models.TransientModel):
                         'type': 'success',
                     }
                 }
-            elif response.status_code == 400:
-                raise UserError(f"Error al insertar el pedido: {response.text}")
-            elif response.status_code == 500:
-                raise UserError(f"Error interno del servidor MetaSync: {response.text}")
-            else:
-                raise UserError(f"Error desconocido (código {response.status_code}): {response.text}")
+                if response.status_code == 200:
+                    self.order_id.is_synchronized = True
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'message': 'Pedido sincronizado correctamente',
+                            'type': 'success',
+                        }
+                    }
+                elif response.status_code == 400:
+                    error_message = response.text
+                    if response.headers.get('content-type', '').startswith('application/json'):
+                        try:
+                            error_data = response.json()
+                            if isinstance(error_data, dict):
+                                error_message = error_data.get('message', response.text)
+                        except json.JSONDecodeError:
+                            pass
+                    raise UserError(f"Error de validación en MetaSync: {error_message}")
+                elif response.status_code == 500:
+                    raise UserError(f"Error interno del servidor MetaSync: {response.text}")
+                else:
+                    raise UserError(f"Error desconocido (código {response.status_code}): {response.text}")
 
-        # except requests.exceptions.ConnectionError:
-        #     raise UserError("Error de conexión: No se pudo conectar al servidor de MetaSync")
         except requests.exceptions.Timeout:
             raise UserError("Error de conexión: El servidor tardó demasiado en responder")
         except requests.exceptions.RequestException as e:
