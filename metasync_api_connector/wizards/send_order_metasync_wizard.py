@@ -39,7 +39,7 @@ class SendOrderMetasyncWizard(models.TransientModel):
 
         try:
             response = requests.post(
-                'https://api.metasync.com/Pedidos/CrearPedido',
+                'https://apis.metasync.com/Pedidos/CrearPedido',
                 headers=headers,
                 json=order_data
             )
