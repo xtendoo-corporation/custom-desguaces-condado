@@ -1,5 +1,7 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 import json
+import requests
 
 
 class SaleOrder(models.Model):
@@ -103,6 +105,44 @@ class SaleOrder(models.Model):
     def _prepare_order_lines(self):
         return [self._prepare_line_data(line) for line in self.order_line]
 
+    def _send_to_metasync(self, order_data):
+        api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey')
+        idempresa = self.env['ir.config_parameter'].sudo().get_param('metasync.id_empresa')
+
+        if not api_key or not idempresa:
+            raise UserError("Faltan credenciales de MetaSync")
+
+        headers = {
+            "apikey": api_key,
+            "idempresa": str(idempresa),
+            "accept": "application/json",
+            "Content-Type": "application/json"
+        }
+
+        try:
+            response = requests.post(
+                'https://apis.metasync.com/Pedidos/CrearPedido',
+                headers=headers,
+                json=order_data
+            )
+            if response.status_code == 200:
+                return True
+            elif response.status_code == 400:
+                error_message = response.text
+                if response.headers.get('content-type', '').startswith('application/json'):
+                    try:
+                        error_data = response.json()
+                        if isinstance(error_data, dict):
+                            error_message = error_data.get('message', response.text)
+                    except json.JSONDecodeError:
+                        pass
+                raise UserError(f"Error de validación en MetaSync: {error_message}")
+            else:
+                raise UserError(f"Error en MetaSync ({response.status_code}): {response.text}")
+
+        except requests.exceptions.RequestException as e:
+            raise UserError(f"Error de conexión: {str(e)}")
+
     def action_synchronize_order(self):
         self.ensure_one()
         order_data = {
@@ -112,17 +152,14 @@ class SaleOrder(models.Model):
             "Lineas": self._prepare_order_lines()
         }
 
-        self.env.context = dict(self.env.context)
-        self.env.context['sale_order_json'] = json.dumps(order_data)
-        self.is_synchronized = True
-
-        return {
-            'name': 'Enviar a MetaSync',
-            'type': 'ir.actions.act_window',
-            'res_model': 'send.order.metasync.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_order_id': self.id,
+        if self._send_to_metasync(order_data):
+            self.is_synchronized = True
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': 'Pedido sincronizado correctamente',
+                    'type': 'success',
+                }
             }
-        }
+        return None

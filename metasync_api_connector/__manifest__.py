@@ -20,7 +20,6 @@
         'views/sale_order_views.xml',
         'wizards/recover_changes_stock_metasync_wizard_view.xml',
         'wizards/recover_changes_stock_company_metasync_wizard_view.xml',
-        'wizards/send_order_metasync_wizard_view.xml',
         'security/ir.model.access.csv',
     ],
     'assets': {
