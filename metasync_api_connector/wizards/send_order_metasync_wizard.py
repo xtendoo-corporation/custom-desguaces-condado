@@ -26,10 +26,6 @@ class SendOrderMetasyncWizard(models.TransientModel):
         self.order_id.action_synchronize_order()
         order_data = json.loads(self.env.context.get('sale_order_json'))
 
-        print("\n=== JSON DEL PEDIDO ===")
-        print(json.dumps(order_data, indent=2, ensure_ascii=False))
-        print("=====================\n")
-
         headers = {
             "apikey": api_key,
             "idempresa": str(idempresa),
@@ -37,12 +33,34 @@ class SendOrderMetasyncWizard(models.TransientModel):
             "Content-Type": "application/json"
         }
 
+        # Depurar estructura del pedido
+        print("\n=== DATOS DE ENVÍO ===")
+        print(f"ID Empresa: {idempresa}")
+        print(f"URL: https://apis.metasync.com/Pedidos/CrearPedido")
+        print("Headers:", {
+            "apikey": "***",
+            "idempresa": str(idempresa),
+            "accept": "application/json",
+            "Content-Type": "application/json"
+        })
+        print("Datos del pedido:")
+        print(json.dumps(order_data, indent=2, ensure_ascii=False))
+        print("==================\n")
+
         try:
             response = requests.post(
                 'https://apis.metasync.com/Pedidos/CrearPedido',
                 headers=headers,
                 json=order_data
             )
+
+            # Imprimir temporalmente en la consola
+            print("\n=== RESPUESTA DEL SERVIDOR ===")
+            print(f"Código de estado: {response.status_code}")
+            print(f"Encabezados: {response.headers}")
+            print(f"Cuerpo: {response.text}")
+            print("=============================\n")
+
             if response.status_code == 200:
                 self.order_id.is_synchronized = True
                 return {
@@ -53,30 +71,20 @@ class SendOrderMetasyncWizard(models.TransientModel):
                         'type': 'success',
                     }
                 }
-                if response.status_code == 200:
-                    self.order_id.is_synchronized = True
-                    return {
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'message': 'Pedido sincronizado correctamente',
-                            'type': 'success',
-                        }
-                    }
-                elif response.status_code == 400:
-                    error_message = response.text
-                    if response.headers.get('content-type', '').startswith('application/json'):
-                        try:
-                            error_data = response.json()
-                            if isinstance(error_data, dict):
-                                error_message = error_data.get('message', response.text)
-                        except json.JSONDecodeError:
-                            pass
-                    raise UserError(f"Error de validación en MetaSync: {error_message}")
-                elif response.status_code == 500:
-                    raise UserError(f"Error interno del servidor MetaSync: {response.text}")
-                else:
-                    raise UserError(f"Error desconocido (código {response.status_code}): {response.text}")
+            elif response.status_code == 400:
+                error_message = response.text
+                if response.headers.get('content-type', '').startswith('application/json'):
+                    try:
+                        error_data = response.json()
+                        if isinstance(error_data, dict):
+                            error_message = error_data.get('message', response.text)
+                    except json.JSONDecodeError:
+                        pass
+                raise UserError(f"Error de validación en MetaSync: {error_message}")
+            elif response.status_code == 500:
+                raise UserError(f"Error interno del servidor MetaSync: {response.text}")
+            else:
+                raise UserError(f"Error desconocido (código {response.status_code}): {response.text}")
 
         except requests.exceptions.Timeout:
             raise UserError("Error de conexión: El servidor tardó demasiado en responder")

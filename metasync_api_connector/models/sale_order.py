@@ -11,10 +11,8 @@ class SaleOrder(models.Model):
         readonly=True,
     )
 
-    def action_synchronize_order(self):
-        self.ensure_one()
-        # Mapeo de estados de pago
-        estado_pago_map = {
+    def _get_payment_status_map(self):
+        return {
             'draft': 0,  # Pendiente
             'sent': 1,  # EsperaConfirmacion
             'sale': 2,  # Pagado
@@ -22,8 +20,8 @@ class SaleOrder(models.Model):
             'cancel': 3,  # Fallido
         }
 
-        # Mapeo de estados del pedido
-        estado_pedido_map = {
+    def _get_order_status_map(self):
+        return {
             'draft': 0,  # Desconocido
             'sent': 1,  # EnSeguimiento
             'sale': 2,  # Reservado
@@ -31,65 +29,93 @@ class SaleOrder(models.Model):
             'cancel': 6,  # Anulado
         }
 
-        # Mapeo de forma de pago
-        forma_pago_map = {
+    def _get_payment_method_map(self):
+        return {
             'transfer': 3,  # Transferencia
             'electronic': 2,  # Tarjeta
             'paypal': 4,  # PayPal
             'other': 6,  # Otros
         }
 
-        order_data = {
-            "id": 0,
-            "idVendedor": 1476,
-            "idCliente": self.partner_id.email,
-            "codigo": self.name,
-            "codigoCrvnet": "",
-            "proveedor": self.company_id.name,
-            "canal": "Odoo",
-            "codigoPago": self.name,
-            "estadoPago": estado_pago_map.get(self.state, 0),
-            "formaPago": forma_pago_map.get(
-                self.payment_acquirer_id.provider if hasattr(self, 'payment_acquirer_id') else 'other', 6),
-            "seguimientoUrl": None,
-            "base": float(self.amount_untaxed),
-            "porcentajeDescuento": 0,
-            "descuento": 0,
-            "subtotal": float(self.amount_untaxed),
-            "porcentajeIva": 21.0,
-            "iva": float(self.amount_tax),
-            "total": float(self.amount_total),
-            "contabilizado": False,
-            "lineas": self._prepare_order_lines(),
-            "observaciones": self.note or self.name,
-            "informacion": "",
-            "idFacturacion": 0,
-            "facturacion": self._prepare_partner_data(self.partner_id),
-            "idOrigenEnvio": 0,
-            "origenEnvio": self._prepare_partner_data(self.company_id.partner_id),
-            "idEnvio": 0,
-            "envio": self._prepare_partner_data(self.partner_shipping_id),
-            "recogidaTienda": False,
-            "documentos": [],
-            "incidencias": [],
-            "estado": estado_pedido_map.get(self.state, 0),  # Reservado
-            "estadoAccion": estado_pago_map.get(self.state, 0),  # Procesando
-            "estadoCRVNet": "",
-            "fechaMod": self.write_date.isoformat(),
-            "fechaIn": self.create_date.isoformat(),
-            "incidenciasTotal": 0,
-            "incidenciasAbiertas": 0,
-            "documentosTotal": 0
+    def _prepare_order_header(self):
+        payment_method = (
+            self.payment_acquirer_id.provider
+            if hasattr(self, 'payment_acquirer_id')
+            else 'other'
+        )
+        return {
+            "Iva": self.amount_tax,
+            "Base": self.amount_untaxed,
+            "Total": self.amount_total,
+            "Codigo": self.name,
+            "Subtotal": self.amount_untaxed,
+            "Descuento": 0,
+            "FormaPago": self._get_payment_method_map().get(payment_method, 6),
+            "IdCliente": self.partner_id.email,
+            "CodigoPago": self.name,
+            "EstadoPago": self._get_payment_status_map().get(self.state, 0),
+            "IdVendedor": 1476,
+            "Observaciones": self.name,
+            "PorcentajeIva": 21,
+            "RecogidaTienda": False,
+            "SeguimientoUrl": None,
+            "PorcentajeDescuento": 0
         }
 
-        # print("\n=== JSON DEL PEDIDO ===")
-        # print(json.dumps(order_data, indent=2, ensure_ascii=False))
-        # print("=====================\n")
+    def _prepare_customer_data(self, partner):
+        return {
+            "Pais": partner.country_id.name,
+            "Tipo": 0,
+            "Email": partner.email,
+            "NifCif": partner.vat or "",
+            "Domicilio": partner.street or "",
+            "Poblacion": partner.city or "",
+            "Provincia": partner.state_id.name or "",
+            "Telefono1": partner.phone,
+            "Telefono2": partner.mobile or "",
+            "RazonSocial": partner.name or "",
+            "CodigoPostal": partner.zip or "",
+            "Observaciones": "",
+            "NombreComercial": partner.name or "",
+        }
+
+    def _prepare_shipping_data(self):
+        shipping_data = self._prepare_customer_data(self.partner_shipping_id)
+        shipping_data.update({
+            "Tipo": 1,
+            "Descripcion": "Facturacion"
+        })
+        return shipping_data
+
+    def _prepare_line_data(self, line):
+        return {
+            "Base": float(line.price_subtotal),
+            "Tipo": 1 if line.product_id.type != 'service' else 2,
+            "Precio": float(line.price_unit),
+            "Cantidad": int(line.product_uom_qty),
+            "Concepto": line.name,
+            "Subtotal": float(line.price_subtotal),
+            "Descuento": float(line.discount),
+            "Referencia": line.product_id.default_code,
+            "PorcentajeDescuento": float(line.discount)
+        }
+
+    def _prepare_order_lines(self):
+        return [self._prepare_line_data(line) for line in self.order_line]
+
+    def action_synchronize_order(self):
+        self.ensure_one()
+        order_data = {
+            "Pedido": self._prepare_order_header(),
+            "Cliente": self._prepare_customer_data(self.partner_id),
+            "Envio": self._prepare_shipping_data(),
+            "Lineas": self._prepare_order_lines()
+        }
 
         self.env.context = dict(self.env.context)
         self.env.context['sale_order_json'] = json.dumps(order_data)
-
         self.is_synchronized = True
+
         return {
             'name': 'Enviar a MetaSync',
             'type': 'ir.actions.act_window',
@@ -100,42 +126,3 @@ class SaleOrder(models.Model):
                 'default_order_id': self.id,
             }
         }
-
-    def _prepare_partner_data(self, partner):
-        return {
-            "Fax": "",
-            "Pais": partner.country_id.name or "ESPAÑA",
-            "Tipo": 0,
-            "Email": partner.email or "",
-            "NifCif": partner.vat or "",
-            "Domicilio": partner.street or "",
-            "Poblacion": partner.city or "",
-            "Provincia": partner.state_id.name or "",
-            "Telefono1": partner.phone or "",
-            "Telefono2": partner.mobile or "",
-            "CodigoPais": partner.country_id.id,
-            "Descripcion": "",
-            "RazonSocial": partner.name,
-            "CodigoPostal": partner.zip or "",
-            "Observaciones": "",
-            "CodigoPoblacion": None,
-            "CodigoProvincia": partner.state_id.id,
-            "NombreComercial": partner.name
-        }
-
-    def _prepare_order_lines(self):
-        lines = []
-        for line in self.order_line:
-            line_data = {
-                "Base": line.price_subtotal,
-                "Tipo": 1 if line.product_id.type != 'service' else 2,
-                "Precio": line.price_unit,
-                "Cantidad": line.product_uom_qty,
-                "Concepto": line.name,
-                "Subtotal": line.price_subtotal,
-                "Descuento": line.discount,
-                "Referencia": line.product_id.default_code or "0000",
-                "PorcentajeDescuento": line.discount
-            }
-            lines.append(line_data)
-        return lines
