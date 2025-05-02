@@ -4,7 +4,7 @@
 {
     "name": "Product Vehicle",
     "category": "e-commerce",
-    "author": "Danie Lopez, Jose Aguilar,"
+    "author": "Daniel Lopez, Jose Aguilar,"
     "Xtendoo",
     "website": "https://github.com/xtendoo-corporation/desguaces-condado",
     "version": "18.0.1.0.0",
