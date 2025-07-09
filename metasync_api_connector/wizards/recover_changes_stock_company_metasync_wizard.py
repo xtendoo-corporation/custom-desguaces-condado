@@ -93,7 +93,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     if pieza['urlsImgs']:
                         first_image_url = pieza['urlsImgs'][0] + ".jpeg"
                         image_data = self.fetch_image(first_image_url)
-                    is_product = self.env['product.vehicle'].search([('default_code', '=', pieza['refLocal'])])
+                    is_product = self.env['product.product'].search([('default_code', '=', pieza['refLocal'])])
                     if is_product:
                         print(f"El producto {pieza['descripcionArticulo']} ya existe en la base de datos")
                         is_product.write({
@@ -153,7 +153,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                         public_categ_ids = [(6, 0, [vehiculos_public_category.id, real_public_category.id])]
 
                         print(f"Creando el producto {pieza['descripcionArticulo']}:")
-                        product = self.env['product.vehicle'].create({
+                        product = self.env['product.product'].create({
                             'name': pieza['descripcionArticulo'],
                             'default_code': pieza['refLocal'],
                             'categ_id': category.id,
