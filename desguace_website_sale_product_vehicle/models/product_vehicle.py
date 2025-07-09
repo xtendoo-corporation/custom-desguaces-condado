@@ -45,6 +45,32 @@ class ProductVehicle(models.Model):
         string="Ribbon",
         comodel_name='product.ribbon'
     )
+
+    # Campos específicos del vehículo según Metasync
+    id_local = fields.Integer(string='ID Local')
+    id_empresa = fields.Integer(string='ID Empresa')
+    codigo = fields.Char(string='Código')
+    bastidor = fields.Char(string='Bastidor')
+    matricula = fields.Char(string='Matrícula')
+    color = fields.Char(string='Color')
+    kilometraje = fields.Integer(string='Kilometraje')
+    anyo_vehiculo = fields.Integer(string='Año del vehículo')
+    codigo_motor = fields.Char(string='Código Motor')
+    codigo_cambio = fields.Char(string='Código Cambio')
+    observaciones = fields.Text(string='Observaciones')
+
+    # Datos técnicos
+    marca = fields.Char(string='Marca')
+    modelo = fields.Char(string='Modelo')
+    version = fields.Char(string='Versión')
+    combustible = fields.Char(string='Combustible')
+    puertas = fields.Integer(string='Puertas')
+    potencia_hp = fields.Integer(string='Potencia HP')
+    potencia_kw = fields.Integer(string='Potencia KW')
+    cilindrada = fields.Integer(string='Cilindrada')
+    transmision = fields.Char(string='Transmisión')
+    num_marchas = fields.Integer(string='Número de marchas')
+
     @api.depends("product_ids")
     def _compute_products_count(self):
         product_model = self.env["product.template"]
@@ -79,3 +105,58 @@ class ProductVehicle(models.Model):
         action['domain'] = [('product_vehicle_id', '=', self.id)]
         action['context'] = {'default_product_vehicle_id': self.id}
         return action
+
+    def sync_vehicle_data(self):
+        """Sincroniza los datos del vehículo con Metasync"""
+        RecoverWizard = self.env['recover.changes.stock.company.metasync.wizard']
+
+        # Obtener parámetros de configuración
+        api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey')
+        id_empresa = self.env['ir.config_parameter'].sudo().get_param('metasync.id_empresa')
+
+        if not api_key or not id_empresa:
+            raise UserError('Falta configurar los parámetros de Metasync')
+
+        # Crear instancia temporal del wizard
+        wizard = RecoverWizard.create({
+            'fecha': datetime.now(),
+            'lastid': '0',
+            'offset': 1000
+        })
+
+        try:
+            # Ejecutar la sincronización usando el método existente
+            result = wizard.recuperar_cambios_almacen_empresa_metasync()
+
+            # Procesar solo los vehículos que coincidan con el ID local
+            if result and 'vehiculos' in result:
+                for vehiculo in result['vehiculos']:
+                    if vehiculo['idLocal'] == self.id_local:
+                        # Actualizar campos del vehículo
+                        self.write({
+                            'name': f"{vehiculo['nombreMarca']} {vehiculo['nombreModelo']}",
+                            'matricula': vehiculo['matricula'],
+                            'bastidor': vehiculo['bastidor'],
+                            'color': vehiculo['color'],
+                            'kilometraje': vehiculo['kilometraje'],
+                            'anyo_vehiculo': vehiculo['anyoVehiculo'],
+                            'codigo_motor': vehiculo['codigoMotor'],
+                            'codigo_cambio': vehiculo['codigoCambio'],
+                            'observaciones': vehiculo['observaciones'],
+                            'combustible': vehiculo['combustible'],
+                            'puertas': vehiculo['puertas'],
+                            'potencia_hp': vehiculo['potenciaHP'],
+                            'potencia_kw': vehiculo['potenciaKw'],
+                            'cilindrada': vehiculo['cilindrada'],
+                            'transmision': vehiculo['transmision'],
+                            'num_marchas': vehiculo['numMarchas']
+                        })
+                        break
+
+            return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+        except Exception as e:
+            raise UserError(f'Error al sincronizar: {str(e)}')
+        finally:
+            # Limpiar el wizard temporal
+            wizard.unlink()

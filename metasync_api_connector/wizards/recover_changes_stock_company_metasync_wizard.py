@@ -93,7 +93,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     if pieza['urlsImgs']:
                         first_image_url = pieza['urlsImgs'][0] + ".jpeg"
                         image_data = self.fetch_image(first_image_url)
-                    is_product = self.env['product.product'].search([('default_code', '=', pieza['refLocal'])])
+                    is_product = self.env['product.vehicle'].search([('default_code', '=', pieza['refLocal'])])
                     if is_product:
                         print(f"El producto {pieza['descripcionArticulo']} ya existe en la base de datos")
                         is_product.write({
@@ -127,12 +127,16 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                             })
                             print(f"Categoría {category.name} creada")
 
+                        # Primero, busca o crea la categoría padre de vehículos
                         vehiculos_public_category = self.env['product.public.category'].search([
                             ('name', '=', 'Vehículos')
                         ], limit=1)
+
+                        # Para la categoría padre de vehículos
                         if not vehiculos_public_category:
                             vehiculos_public_category = self.env['product.public.category'].create({
                                 'name': 'Vehículos',
+                                'sequence': 1
                             })
 
                         real_public_category = self.env['product.public.category'].search([
@@ -141,13 +145,15 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                         if not real_public_category:
                             real_public_category = self.env['product.public.category'].create({
                                 'name': pieza['descripcionFamilia'],
+                                'parent_id': vehiculos_public_category.id,  # Establecemos la jerarquía
+                                'sequence': 10,  # Añadimos secuencia
                             })
 
                         # Al crear el producto, asignar ambas categorías públicas
                         public_categ_ids = [(6, 0, [vehiculos_public_category.id, real_public_category.id])]
 
                         print(f"Creando el producto {pieza['descripcionArticulo']}:")
-                        product = self.env['product.product'].create({
+                        product = self.env['product.vehicle'].create({
                             'name': pieza['descripcionArticulo'],
                             'default_code': pieza['refLocal'],
                             'categ_id': category.id,
@@ -331,24 +337,34 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                         if not category:
                             raise UserError("La categoría 'Vehículos' no se ha podido crear.")
 
+                        # Primero, busca o crea la categoría padre de vehículos
+                        vehiculos_public_category = self.env['product.public.category'].search([
+                            ('name', '=', 'Vehículos')
+                        ], limit=1)
+
+                        if not vehiculos_public_category:
+                            vehiculos_public_category = self.env['product.public.category'].create({
+                                'name': 'Vehículos',
+                                'sequence': 1,
+                            })
+
+                        # Luego, crea la subcategoría usando vehiculos_public_category como padre
                         existing_category = self.env['product.public.category'].search([
                             ('name', '=', name),
                             ('idLocal', '=', vehiculo['idLocal']),
-                            ('idEmpresa', '=', vehiculo['idEmpresa']),
-                            ('parent_id', '=', category.id),
+                            ('idEmpresa', '=', vehiculo['idEmpresa'])
                         ], limit=1)
+
                         print(f"Existing category: {existing_category}")
                         if not existing_category:
-                            print(f"Creating category: ")
-                            print(f"idLocal: {vehiculo['idLocal']}")
-                            print(f"idEmpresa: {vehiculo['idEmpresa']}")
                             existing_category = self.env['product.public.category'].create({
                                 'name': name,
                                 'idLocal': vehiculo['idLocal'],
                                 'idEmpresa': vehiculo['idEmpresa'],
-                                'parent_id': category.id,
+                                'parent_id': vehiculos_public_category.id,
                                 'image_1920': image_data,
                                 'website_description': website_description,
+                                'sequence': 10
                             })
                         else:
                             print(f"Updating category: {existing_category.name}")
@@ -393,16 +409,37 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                                 'is_vehicle': True,  # <- Aquí se indica que es un vehículo
                             })
 
-                        product_templates = self.env['product.template'].search(
-                            [('vehicle_id', '=', vehiculo['idLocal'])])
+                        product_templates = self.env['product.template'].search([
+                            ('vehicle_id', '=', vehiculo['idLocal'])
+                        ])
+
+                        # Primero actualizamos los productos
                         if product_templates:
                             for product_template in product_templates:
-                                print(f"Updating product template: {product_template.name}")
+                                print(f"Actualizando plantilla de producto: {product_template.name}")
                                 product_template.write({
-                                    'public_categ_ids': [(4, existing_category.id)]
+                                    'public_categ_ids': [(4, existing_category.id, False)]
                                 })
-                        else:
-                            existing_category.unlink()
+
+                        # Luego actualizamos la categoría
+                        if existing_category:
+                            try:
+                                existing_category.write({
+                                    'image_1920': image_data,
+                                    'website_description': website_description,
+                                    'sequence': 10
+                                })
+                            except Exception as e:
+                                print(f"Error al actualizar la categoría: {e}")
+                                # En caso de error, intentamos mover los productos a otra categoría
+                                default_category = self.env['product.public.category'].search([
+                                    ('name', '=', 'Vehículos')
+                                ], limit=1)
+                                if default_category and product_templates:
+                                    for product_template in product_templates:
+                                        product_template.write({
+                                            'public_categ_ids': [(4, default_category.id, False)]
+                                        })
 
                 print("*" * 80)
                 return response.json()

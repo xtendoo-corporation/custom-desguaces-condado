@@ -1,0 +1,1460 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Apis Metasync",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.metasync.com/"
+    }
+  ],
+  "paths": {
+    "/Almacen/RecuperarCambiosCanal": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Obtiene tanda de piezas y sus vehiculos con un resultset iterable por lastid",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener las piezas a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastid",
+            "in": "header",
+            "description": "Default = 0 iterar con el lastid del resultset para recorrer todas las tandas.",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "header",
+            "description": "Cantidad que deseamos obtener Max 1000",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/RecuperarCambiosCanalEmpresa": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Obtiene tanda de piezas y sus vehiculos con un resultset iterable por lastid",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener las piezas a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastid",
+            "in": "header",
+            "description": "Default = 0 iterar con el lastid del resultset para recorrer todas las tandas.",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "header",
+            "description": "Cantidad que deseamos obtener Max 1000",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/RecuperarCambiosVehiculosCanal": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Obtiene la paginación de vehiculos con un resultset iterable por lastid",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener los vehiculos a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastid",
+            "in": "header",
+            "description": "Default = 0 iterar con el lastid del resultset para recorrer todas las tandas.",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "header",
+            "description": "Cantidad que deseamos obtener max 1000",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/RecuperarCambiosVehiculosCanalEmpresa": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Obtiene la paginación de vehiculos con un resultset iterable por lastid",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener los vehiculos a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastid",
+            "in": "header",
+            "description": "Default = 0 iterar con el lastid del resultset para recorrer todas las tandas.",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "header",
+            "description": "Cantidad que deseamos obtener max 1000",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/ConteoPiezas": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Devuelve la cantidad específica de piezas a partir de una fecha",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener cantidad de piezas a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/ConteoPiezasEmpresa": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Devuelve la cantidad específica de piezas a partir de una fecha sobre una empresa",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener cantidad de piezas a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Identificar local de la empresa (lo proporciona soporte)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/ConteoVehiculos": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Devuelve la cantidad específica de vehiculos a partir de una fecha",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener cantidad de vehiculos a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Almacen/ConteoVehiculosEmpresa": {
+      "get": {
+        "tags": [
+          "Almacen"
+        ],
+        "summary": "Devuelve la cantidad específica de vehiculos a partir de una fecha sobre una empresa",
+        "parameters": [
+          {
+            "name": "apiKey",
+            "in": "header",
+            "description": "apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "header",
+            "description": "Obtener cantidad de vehiculos a partir de esta fecha ej (20/12/2023 21:29:56)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Identificar local de la empresa (lo proporciona soporte)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Pedidos/CrearPedido": {
+      "post": {
+        "tags": [
+          "Pedidos"
+        ],
+        "summary": "Crear un pedido enviando un json por body y los otros parametros requeridos por header ver json pedido",
+        "parameters": [
+          {
+            "name": "apikey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Añadir el json del pedido ([Ejemplo Json](https://testdocs.metasync.com/APIS/APIPedidos/#json-pedido))",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewPedido"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewPedido"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewPedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Pedidos/ActualizarEstado": {
+      "post": {
+        "tags": [
+          "Pedidos"
+        ],
+        "summary": "A través del codigo interno actualizar el estado del pedido al que deseemos.",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "header",
+            "description": "Código interno del pedido que queremos actualizar",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "header",
+            "description": "Estado al cual deseamos actualizar el pedido, ver el enum de estados [Enum](https://testdocs.metasync.com/APIS/APIPedidos/#pedidosactualizarestado)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Pedidos/AgregarSeguimiento": {
+      "post": {
+        "tags": [
+          "Pedidos"
+        ],
+        "summary": "Añadir a un pedido su url de seguimiento",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "header",
+            "description": "Código local del pedido",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "url",
+            "in": "header",
+            "description": "Url de seguimiento (normalmente deberia estar en el correo del desguace)",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Pedidos/AnularPedido": {
+      "post": {
+        "tags": [
+          "Pedidos"
+        ],
+        "summary": "Cancelar un pedido a través de su código interno",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "header",
+            "description": "Código del pedido",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Pedidos/RecuperarPedidoOrigen": {
+      "get": {
+        "tags": [
+          "Pedidos"
+        ],
+        "summary": "Recuperar el origen de un pedido a través de su código interno",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "header",
+            "description": "Código del pedido",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/Pedidos/ObtenerSeguimiento": {
+      "get": {
+        "tags": [
+          "Pedidos"
+        ],
+        "summary": "Recuperar el seguimiento de un pedido a través de su código interno",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "header",
+            "description": "Código del pedido",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apikey",
+            "in": "header",
+            "description": "Apikey canal",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempresa",
+            "in": "header",
+            "description": "Id local de la empresa",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ViewPedido": {
+        "properties": {
+          "Pedido": {
+            "$ref": "#/components/schemas/Pedido"
+          },
+          "Cliente": {
+            "$ref": "#/components/schemas/Cliente"
+          },
+          "Envio": {
+            "$ref": "#/components/schemas/Envio"
+          },
+          "Lineas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Lineas"
+            }
+          }
+        },
+        "type": "object"
+      },
+      "Pedido": {
+        "properties": {
+          "Observaciones": {
+            "nullable": true,
+            "type": "string"
+          },
+          "IdCliente": {
+            "type": "string"
+          },
+          "Codigo": {
+            "type": "string"
+          },
+          "IdVendedor": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "SeguimientoUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "EstadoPago": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "FormaPago": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "RecogidaTienda": {
+            "type": "boolean"
+          },
+          "PorcentajeIva": {
+            "format": "double",
+            "type": "number"
+          },
+          "Base": {
+            "format": "double",
+            "type": "number"
+          },
+          "PorcentajeDescuento": {
+            "format": "double",
+            "type": "number"
+          },
+          "SubTotal": {
+            "format": "double",
+            "type": "number"
+          },
+          "Descuento": {
+            "format": "double",
+            "type": "number"
+          },
+          "Total": {
+            "format": "double",
+            "type": "number"
+          },
+          "Iva": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "Cliente": {
+        "properties": {
+          "Descripcion": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Tipo": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "NombreComercial": {
+            "type": "string"
+          },
+          "RazonSocial": {
+            "type": "string"
+          },
+          "Domicilio": {
+            "type": "string"
+          },
+          "CodigoPostal": {
+            "type": "string"
+          },
+          "Poblacion": {
+            "type": "string"
+          },
+          "Provincia": {
+            "type": "string"
+          },
+          "Telefono1": {
+            "type": "string"
+          },
+          "Telefono2": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Fax": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Pais": {
+            "type": "string"
+          },
+          "Observaciones": {
+            "nullable": true,
+            "type": "string"
+          },
+          "NifCif": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Envio": {
+        "properties": {
+          "Descripcion": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Tipo": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "NombreComercial": {
+            "type": "string"
+          },
+          "RazonSocial": {
+            "type": "string"
+          },
+          "Domicilio": {
+            "type": "string"
+          },
+          "CodigoPostal": {
+            "type": "string"
+          },
+          "Poblacion": {
+            "type": "string"
+          },
+          "Provincia": {
+            "type": "string"
+          },
+          "Telefono1": {
+            "type": "string"
+          },
+          "Telefono2": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Fax": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Pais": {
+            "type": "string"
+          },
+          "Observaciones": {
+            "nullable": true,
+            "type": "string"
+          },
+          "NifCif": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Lineas": {
+        "properties": {
+          "Tipo": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "Referencia": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Cantidad": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "Concepto": {
+            "nullable": true,
+            "type": "string"
+          },
+          "Precio": {
+            "format": "double",
+            "type": "number"
+          },
+          "Base": {
+            "format": "double",
+            "type": "number"
+          },
+          "SubTotal": {
+            "format": "double",
+            "type": "number"
+          },
+          "PorcentajeDescuento": {
+            "format": "double",
+            "type": "number"
+          },
+          "Descuento": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "RecuperarCambiosCanal": {
+        "required": [
+          "apikey",
+          "fecha",
+          "lastid",
+          "offset"
+        ],
+        "type": "object",
+        "properties": {
+          "apikey": {
+            "type": "string",
+            "example": "your-apikey"
+          },
+          "fecha": {
+            "type": "string",
+            "example": "20/12/2023 21:29:56"
+          },
+          "lastid": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1946873
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1000
+          }
+        },
+        "xml": {
+          "name": "##default"
+        }
+      },
+      "RecuperarCambiosCanalEmpresa": {
+        "required": [
+          "apikey",
+          "fecha",
+          "lastid",
+          "offset",
+          "idempresa"
+        ],
+        "type": "object",
+        "properties": {
+          "apikey": {
+            "type": "string",
+            "example": "your-apikey"
+          },
+          "fecha": {
+            "type": "string",
+            "example": "20/12/2023 21:29:56"
+          },
+          "lastid": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1946873
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1000
+          },
+          "idempresa": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1476
+          }
+        },
+        "xml": {
+          "name": "##default"
+        }
+      },
+      "RecuperarCambiosVehiculosCanal": {
+        "required": [
+          "apikey",
+          "fecha",
+          "lastid",
+          "offset"
+        ],
+        "type": "object",
+        "properties": {
+          "apikey": {
+            "type": "string",
+            "example": "your-apikey"
+          },
+          "fecha": {
+            "type": "string",
+            "example": "20/12/2023 21:29:56"
+          },
+          "lastid": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1946873
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1000
+          }
+        },
+        "xml": {
+          "name": "##default"
+        }
+      },
+      "RecuperarCambiosVehiculosCanalEmpresa": {
+        "required": [
+          "apikey",
+          "fecha",
+          "lastid",
+          "offset",
+          "idempresa"
+        ],
+        "type": "object",
+        "properties": {
+          "apikey": {
+            "type": "string",
+            "example": "your-apikey"
+          },
+          "fecha": {
+            "type": "string",
+            "example": "20/12/2023 21:29:56"
+          },
+          "lastid": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1946873
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1000
+          },
+          "idempresa": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1476
+          }
+        },
+        "xml": {
+          "name": "##default"
+        }
+      },
+      "Pieza": {
+        "type": "object",
+        "properties": {
+          "idEmpresa": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1476
+          },
+          "refLocal": {
+            "type": "integer",
+            "format": "int32",
+            "example": 200647
+          },
+          "idVehiculo": {
+            "type": "integer",
+            "format": "int32",
+            "example": -1915379401
+          },
+          "codFamilia": {
+            "type": "string",
+            "example": 9
+          },
+          "descripcionFamilia": {
+            "type": "string",
+            "example": "ELECTRICIDAD"
+          },
+          "codArticulo": {
+            "type": "string",
+            "example": null
+          },
+          "descripcionArticulo": {
+            "type": "string",
+            "example": "MOTOR ARRANQUE"
+          },
+          "codVersion": {
+            "type": "string",
+            "example": "01130011B000004"
+          },
+          "refPrincipal": {
+            "type": "string",
+            "example": 1314025
+          },
+          "precio": {
+            "type": "integer",
+            "format": "int32",
+            "example": 2500
+          },
+          "anyoStock": {
+            "type": "integer",
+            "format": "int32",
+            "example": 0
+          },
+          "peso": {
+            "type": "integer",
+            "format": "int32",
+            "example": 500
+          },
+          "ubicacion": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "observaciones": {
+            "type": "string",
+            "example": null
+          },
+          "reserva": {
+            "type": "integer",
+            "format": "int32",
+            "example": 0
+          },
+          "tipoMaterial": {
+            "type": "integer",
+            "format": "int32",
+            "example": 0
+          },
+          "urlsImgs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": [
+                "https://cdn11.metasync.com/vbcXn_pop8ELJ1ANDMOCfwZjfqpc0gH-vLS5yJoXaIx_n4pL1GdB0w==",
+                "https://cdn11.metasync.com/lAC69ruOWNYGkT68b9b8zmO5AzY1I6nZI6VMs6n94ng2FzwBkgtXBQ==",
+                "https://cdn11.metasync.com/9wZS0vJrHkXj5b10MpSJnIAX6068ZPmRy1u0D_22quJS-5HKmnBuLA==",
+                "https://cdn11.metasync.com/Z2-lEakumfc0WABvJhrVWjYTSt5zMIHFGhrTYHdRJlc3zq3T0RbkgQ==",
+                "https://cdn11.metasync.com/JALdfFfGpve-YLG316-cbZj--kP28boBchWMdZ5fqIUuoY2L7ysI9A=="
+              ]
+            }
+          },
+          "fechaMod": {
+            "type": "string",
+            "example": "2024-01-30T15:42:33"
+          }
+        },
+        "xml": {
+          "name": "category"
+        }
+      },
+      "Vehiculo": {
+        "type": "object",
+        "properties": {
+          "idLocal": {
+            "type": "integer",
+            "format": "int32",
+            "example": 49595
+          },
+          "idEmpresa": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1476
+          },
+          "fechaMod": {
+            "type": "string",
+            "example": "2024-01-30T15:42:34.000Z"
+          },
+          "codigo": {
+            "type": "string",
+            "example": 10424
+          },
+          "estado": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "example": "15, 5"
+            }
+          },
+          "bastidor": {
+            "type": "string",
+            "example": 10424
+          },
+          "matricula": {
+            "type": "string",
+            "example": "2024-01-30T15:42:34.000Z"
+          },
+          "color": {
+            "type": "string",
+            "example": "2024-01-30T15:42:34.000Z"
+          },
+          "kilometraje": {
+            "type": "integer",
+            "format": "int32",
+            "example": 100900
+          },
+          "anyoVehiculo": {
+            "type": "integer",
+            "format": "int32",
+            "example": 2006
+          },
+          "codigoMotor": {
+            "type": "string",
+            "example": "M47D20"
+          },
+          "codigoCambio": {
+            "type": "string",
+            "example": "TRRP0"
+          },
+          "observaciones": {
+            "type": "string",
+            "example": null
+          },
+          "urlsImgs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "https://cdn11.metasync.com/9QcoK6IHNWwkXAisjXlSocco3IZ94WwjUyYihhJLRMNwnPYqi0JEzw=="
+            }
+          },
+          "codMarca": {
+            "type": "string",
+            "example": 1130
+          },
+          "nombreMarca": {
+            "type": "string",
+            "example": "BMW"
+          },
+          "codModelo": {
+            "type": "string",
+            "example": 1130046
+          },
+          "nombreModelo": {
+            "type": "string",
+            "example": "SERIE 3 BERLINA (E46)"
+          },
+          "codVersion": {
+            "type": "string",
+            "example": 11300460080001
+          },
+          "nombreVersion": {
+            "type": "string",
+            "example": "320d"
+          },
+          "tipoVersion": {
+            "type": "string",
+            "example": "BerS"
+          },
+          "combustible": {
+            "type": "string",
+            "example": "Diesel"
+          },
+          "puertas": {
+            "type": "integer",
+            "example": 5
+          },
+          "anyoInicio": {
+            "type": "integer",
+            "example": 1998
+          },
+          "anyoFin": {
+            "type": "integer",
+            "example": 2001
+          },
+          "tiposMotor": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": [
+                "M47D20",
+                "M47204D1"
+              ]
+            }
+          },
+          "potenciaHP": {
+            "type": "integer",
+            "format": "int32",
+            "example": 136
+          },
+          "potenciaKw": {
+            "type": "integer",
+            "format": "int32",
+            "example": 100
+          },
+          "cilindrada": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1951
+          },
+          "transmision": {
+            "type": "string",
+            "example": "Caja de cambios 5 velocidades"
+          },
+          "alimentacion": {
+            "type": "string",
+            "example": null
+          },
+          "numMarchas": {
+            "type": "integer",
+            "format": "int32",
+            "example": 5
+          },
+          "rvCode": {
+            "type": "string",
+            "example": 34242
+          },
+          "ktype": {
+            "type": "string",
+            "example": 15638
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "name": "api_key",
+        "in": "header"
+      }
+    }
+  }
+}
