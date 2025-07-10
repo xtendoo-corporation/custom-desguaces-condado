@@ -8,6 +8,7 @@ class ProductVehicle(models.Model):
     _description = "Product Vehicle"
     _order = "name"
 
+    # Campos existentes necesarios para integraciones
     name = fields.Char(
         string="Vehicle Name",
         required=True
@@ -46,30 +47,131 @@ class ProductVehicle(models.Model):
         comodel_name='product.ribbon'
     )
 
-    # Campos específicos del vehículo según Metasync
-    id_local = fields.Integer(string='ID Local')
-    id_empresa = fields.Integer(string='ID Empresa')
-    codigo = fields.Char(string='Código')
-    bastidor = fields.Char(string='Bastidor')
-    matricula = fields.Char(string='Matrícula')
-    color = fields.Char(string='Color')
-    kilometraje = fields.Integer(string='Kilometraje')
-    anyo_vehiculo = fields.Integer(string='Año del vehículo')
-    codigo_motor = fields.Char(string='Código Motor')
-    codigo_cambio = fields.Char(string='Código Cambio')
-    observaciones = fields.Text(string='Observaciones')
+    # Campos de identificación Metasync
+    id_local = fields.Char(
+        string='ID Local',
+        index=True,
+        help="Local ID for the vehicle, used for synchronization with Metasync.",
+        copy=False
+    )
+    id_empresa = fields.Char(
+        string='ID Empresa'
+    )
+    fecha_mod = fields.Datetime(
+        string='Fecha Modificación'
+    )
+    codigo = fields.Char(
+        string='Código'
+    )
+    estado = fields.Char(
+        string='Estado'
+    )
 
-    # Datos técnicos
-    marca = fields.Char(string='Marca')
-    modelo = fields.Char(string='Modelo')
-    version = fields.Char(string='Versión')
-    combustible = fields.Char(string='Combustible')
-    puertas = fields.Integer(string='Puertas')
-    potencia_hp = fields.Integer(string='Potencia HP')
-    potencia_kw = fields.Integer(string='Potencia KW')
-    cilindrada = fields.Integer(string='Cilindrada')
-    transmision = fields.Char(string='Transmisión')
-    num_marchas = fields.Integer(string='Número de marchas')
+    # Datos físicos del vehículo
+    bastidor = fields.Char(
+        string='Bastidor'
+    )
+    matricula = fields.Char(
+        string='Matrícula'
+    )
+    color = fields.Char(
+        string='Color'
+    )
+    kilometraje = fields.Integer(
+        string='Kilometraje'
+    )
+    anyo_vehiculo = fields.Integer(
+        string='Año del vehículo'
+    )
+    codigo_motor = fields.Char(
+        string='Código Motor'
+    )
+    codigo_cambio = fields.Char(
+        string='Código Cambio'
+    )
+    observaciones = fields.Text(
+        string='Observaciones'
+    )
+
+    # Datos de marca/modelo
+    cod_marca = fields.Char(
+        string='Código Marca'
+    )
+    nombre_marca = fields.Char(
+        string='Nombre Marca'
+    )
+    cod_modelo = fields.Char(
+        string='Código Modelo'
+    )
+    nombre_modelo = fields.Char(
+        string='Nombre Modelo'
+    )
+    cod_version = fields.Char(
+        string='Código Versión'
+    )
+    nombre_version = fields.Char(
+        string='Nombre Versión'
+    )
+    tipo_version = fields.Char(
+        string='Tipo Versión'
+    )
+
+    # Especificaciones técnicas
+    combustible = fields.Char(
+        string='Combustible'
+    )
+    puertas = fields.Integer(
+        string='Puertas'
+    )
+    anyo_inicio = fields.Integer(
+        string='Año Inicio'
+    )
+    anyo_fin = fields.Integer(
+        string='Año Fin'
+    )
+    tipos_motor = fields.Char(
+        string='Tipos Motor'
+    )
+    potencia_hp = fields.Float(
+        string='Potencia HP'
+    )
+    potencia_kw = fields.Float(
+        string='Potencia KW'
+    )
+    cilindrada = fields.Integer(
+        string='Cilindrada'
+    )
+    transmision = fields.Char(
+        string='Transmisión'
+    )
+    alimentacion = fields.Char(
+        string='Alimentación'
+    )
+    num_marchas = fields.Integer(
+        string='Número de marchas'
+    )
+
+    # Códigos adicionales
+    rv_code = fields.Char(
+        string='RV Code'
+    )
+    ktype = fields.Char(
+        string='K Type'
+    )
+
+    # URLs de imágenes
+    urls_imgs = fields.Text(
+        string='URLs Imágenes'
+    )
+
+    state = fields.Selection(
+        [
+            ('published', 'Published'),
+            ('unpublished', 'Unpublished')
+        ],
+        compute='_compute_state',
+        store=False, string="State"
+    )
 
     @api.depends("product_ids")
     def _compute_products_count(self):
@@ -84,20 +186,18 @@ class ProductVehicle(models.Model):
         for vehicle in self:
             vehicle.products_count = data.get(vehicle.id, 0)
 
-    state = fields.Selection([
-        ('published', 'Published'),
-        ('unpublished', 'Unpublished')
-    ], compute='_compute_state', store=False, string="State")
 
     @api.depends('is_published')
     def _compute_state(self):
         for record in self:
             record.state = 'published' if record.is_published else 'unpublished'
 
+
     def website_publish_button(self):
         self.ensure_one()
         self.is_published = not self.is_published
         return True
+
 
     def action_view_products(self):
         self.ensure_one()
@@ -106,57 +206,53 @@ class ProductVehicle(models.Model):
         action['context'] = {'default_product_vehicle_id': self.id}
         return action
 
-    def sync_vehicle_data(self):
-        """Sincroniza los datos del vehículo con Metasync"""
-        RecoverWizard = self.env['recover.changes.stock.company.metasync.wizard']
+    @api.model
+    def create(self, vals):
+        """Override create para logging"""
+        result = super().create(vals)
+        print(f"Vehículo creado: {result.name} (ID Local: {result.id_local})")
+        return result
 
-        # Obtener parámetros de configuración
-        api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey')
-        id_empresa = self.env['ir.config_parameter'].sudo().get_param('metasync.id_empresa')
+    def write(self, vals):
+        """Override write para logging"""
+        result = super().write(vals)
+        for vehicle in self:
+            print(f"Vehículo actualizado: {vehicle.name} (ID Local: {vehicle.id_local})")
+        return result
 
-        if not api_key or not id_empresa:
-            raise UserError('Falta configurar los parámetros de Metasync')
+    def name_get(self):
+        """Personalizar el nombre mostrado"""
+        result = []
+        for vehicle in self:
+            if vehicle.id_local:
+                name = f"{vehicle.name} (ID: {vehicle.id_local})"
+            else:
+                name = vehicle.name
+            result.append((vehicle.id, name))
+        return result
 
-        # Crear instancia temporal del wizard
-        wizard = RecoverWizard.create({
-            'fecha': datetime.now(),
-            'lastid': '0',
-            'offset': 1000
-        })
+    @api.model
+    def find_by_local_id(self, local_id):
+        """Método auxiliar para buscar vehículo por ID local"""
+        return self.search([('id_local', '=', local_id)], limit=1)
 
-        try:
-            # Ejecutar la sincronización usando el método existente
-            result = wizard.recuperar_cambios_almacen_empresa_metasync()
+    @api.model
+    def debug_search_by_local_id(self, local_id):
+        """Método de debugging para buscar vehículo por ID local"""
+        print(f"Buscando vehículo con id_local = {local_id}")
+        vehicles = self.search([('id_local', '=', local_id)])
+        print(f"Encontrados {len(vehicles)} vehículos")
+        for vehicle in vehicles:
+            print(f"  - ID: {vehicle.id}, Nombre: {vehicle.name}, ID Local: {vehicle.id_local}")
+        return vehicles
 
-            # Procesar solo los vehículos que coincidan con el ID local
-            if result and 'vehiculos' in result:
-                for vehiculo in result['vehiculos']:
-                    if vehiculo['idLocal'] == self.id_local:
-                        # Actualizar campos del vehículo
-                        self.write({
-                            'name': f"{vehiculo['nombreMarca']} {vehiculo['nombreModelo']}",
-                            'matricula': vehiculo['matricula'],
-                            'bastidor': vehiculo['bastidor'],
-                            'color': vehiculo['color'],
-                            'kilometraje': vehiculo['kilometraje'],
-                            'anyo_vehiculo': vehiculo['anyoVehiculo'],
-                            'codigo_motor': vehiculo['codigoMotor'],
-                            'codigo_cambio': vehiculo['codigoCambio'],
-                            'observaciones': vehiculo['observaciones'],
-                            'combustible': vehiculo['combustible'],
-                            'puertas': vehiculo['puertas'],
-                            'potencia_hp': vehiculo['potenciaHP'],
-                            'potencia_kw': vehiculo['potenciaKw'],
-                            'cilindrada': vehiculo['cilindrada'],
-                            'transmision': vehiculo['transmision'],
-                            'num_marchas': vehiculo['numMarchas']
-                        })
-                        break
-
-            return {'type': 'ir.actions.client', 'tag': 'reload'}
-
-        except Exception as e:
-            raise UserError(f'Error al sincronizar: {str(e)}')
-        finally:
-            # Limpiar el wizard temporal
-            wizard.unlink()
+    def get_vehicles_count_by_sync_status(self):
+        """Obtener conteo de vehículos por estado"""
+        total = self.search_count([])
+        with_id = self.search_count([('id_local', '!=', False)])
+        without_id = total - with_id
+        return {
+            'total': total,
+            'with_metasync_id': with_id,
+            'without_metasync_id': without_id
+        }

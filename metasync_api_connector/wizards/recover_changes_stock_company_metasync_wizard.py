@@ -1,5 +1,3 @@
-from PIL.ImageChops import offset
-
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import base64
@@ -19,13 +17,12 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
         self.ensure_one()
         api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey', default=None)
         if not api_key:
-            raise UserError(
-                "No está bien configurado el parámetro 'metasync.inventory.apikey' o no es correcto.")
+            raise UserError("No está bien configurado el parámetro 'metasync.inventory.apikey' o no es correcto.")
+
         idempresa = self.env['ir.config_parameter'].sudo().get_param('metasync.id_empresa', default=None)
         if not idempresa:
-            raise UserError(
-                "No está bien configurado el parámetro 'metasync.inventory.idempresa' o no es correcto.")
-        print("Fecha: ", self.fecha.strftime('%d/%m/%Y %H:%M:%S'))
+            raise UserError("No está bien configurado el parámetro 'metasync.id_empresa' o no es correcto.")
+
         headers = {
             'apiKey': api_key,
             'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
@@ -33,6 +30,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             'offset': str(self.offset),
             'idempresa': idempresa
         }
+
         situacion_map = {
             0: "En Proceso de Desmontaje",
             1: "Almacenada",
@@ -45,420 +43,363 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             8: "Vendida",
             9: "Situación Desconocida"
         }
+
         type_material_map = {
             0: "Revisado",
             1: "Nuevo",
             2: "De segunda mano",
             3: "Reparado",
         }
+
         try:
-            response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa', headers=headers)
-            response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            # Acceder a las piezas
-            if len(response.json()['piezas']) == 0:
-                print("No hay piezas")
-            else:
-                for pieza in response.json()['piezas']:
-                    print('---')
-                    # print(f"ID Empresa: {pieza['idEmpresa']}")
-                    # print(f"Referencia local: {pieza['refLocal']}")
-                    print(f"ID Vehículo: {pieza['idVehiculo']}")
-                    # print(f"Código Familia: {pieza['codFamilia']}")
-                    # print(f"Descripción Familia: {pieza['descripcionFamilia']}")
-                    # print(f"Código Artículo: {pieza['codArticulo']}")
-                    # print(f"Descripción del artículo: {pieza['descripcionArticulo']}")
-                    # print(f"Código Versión: {pieza['codVersion']}")
-                    # print(f"Referencia Principal: {pieza['refPrincipal']}")
-                    # print(f"Precio: {pieza['precio']}")
-                    # print(f"Año Stock: {pieza['anyoStock']}")
-                    # print(f"Peso: {pieza['peso']}")
-                    ubicacion_texto = situacion_map.get(pieza['ubicacion'], "Situación Desconocida")
-                    # print(f"Ubicación: {ubicacion_texto}")
-                    # print(f"Observaciones: {pieza['observaciones']}")
-                    # print(f"Reserva: {pieza['reserva']}")
-                    tipo_material_texto = type_material_map.get(pieza['tipoMaterial'], "Tipo Desconocido")
-                    # print(f"Tipo Material: {tipo_material_texto}")
-                    print(f"Imagen/es:")
-                    for url in pieza['urlsImgs']:
-                        url = url + ".jpeg"
-                        print(f"- URL: {url}")
-                    # print(f"Fecha de modificación: {pieza['fechaMod']}")
-                    date_str = pieza['fechaMod']
-                    date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
-                    formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
-                    print(f"Fecha de modificación: {formatted_date}")
-                    print(f"Código Almacén: {pieza['codAlmacen']}")
-                    print('---')
-                    image_data = None
-                    if pieza['urlsImgs']:
-                        first_image_url = pieza['urlsImgs'][0] + ".jpeg"
-                        image_data = self.fetch_image(first_image_url)
-                    is_product = self.env['product.product'].search([('default_code', '=', pieza['refLocal'])])
-                    if is_product:
-                        print(f"El producto {pieza['descripcionArticulo']} ya existe en la base de datos")
-                        is_product.write({
-                            'name': pieza['descripcionArticulo'],
-                            'list_price': pieza['precio'] / 100,
-                            'weight': pieza['peso'],
-                            'image_1920': image_data,
-                            'principal_ref': pieza['refPrincipal'],
-                            # 'vehicle_id': pieza['idVehiculo'],
-                            'version_code': pieza['codVersion'],
-                            'article_code': pieza['codArticulo'],
-                            'stock_year': pieza['anyoStock'],
-                            'location': ubicacion_texto,
-                            'observations': pieza['observaciones'],
-                            'reserve': pieza['reserva'],
-                            'material_type': tipo_material_texto,
-                            'modification_date': formatted_date,
-                            'cod_almacen': pieza['codAlmacen'],
-                        })
-                    else:
-                        is_category = self.env['product.category'].search([('default_code', '=', pieza['codFamilia'])])
-                        if is_category:
-                            print(f"La categoría {pieza['descripcionFamilia']} ya existe en la base de datos")
-                            category = is_category
-                        else:
-                            print(f"Creando la categoría {pieza['descripcionFamilia']}:")
-                            category = self.env['product.category'].create({
-                                'name': pieza['descripcionFamilia'],
-                                'default_code': pieza['codFamilia'],
-                                'parent_id': 1,
-                            })
-                            print(f"Categoría {category.name} creada")
+            response = requests.get(
+                'https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa',
+                headers=headers
+            )
+            response.raise_for_status()
+            data = response.json()
 
-                        # Primero, busca o crea la categoría padre de vehículos
-                        vehiculos_public_category = self.env['product.public.category'].search([
-                            ('name', '=', 'Vehículos')
-                        ], limit=1)
+            # Contadores para estadísticas
+            stats = {
+                'vehicles': {
+                    'created': 0,
+                    'updated': 0,
+                    'skipped': 0,
+                    'error': 0
+                },
+                'pieces': {
+                    'created': 0,
+                    'updated': 0,
+                    'skipped': 0,
+                    'error': 0
+                }
+            }
 
-                        # Para la categoría padre de vehículos
-                        if not vehiculos_public_category:
-                            vehiculos_public_category = self.env['product.public.category'].create({
-                                'name': 'Vehículos',
-                                'sequence': 1
-                            })
-
-                        real_public_category = self.env['product.public.category'].search([
-                            ('name', '=', pieza['descripcionFamilia'])
-                        ], limit=1)
-                        if not real_public_category:
-                            real_public_category = self.env['product.public.category'].create({
-                                'name': pieza['descripcionFamilia'],
-                                'parent_id': vehiculos_public_category.id,  # Establecemos la jerarquía
-                                'sequence': 10,  # Añadimos secuencia
-                            })
-
-                        # Al crear el producto, asignar ambas categorías públicas
-                        public_categ_ids = [(6, 0, [vehiculos_public_category.id, real_public_category.id])]
-
-                        print(f"Creando el producto {pieza['descripcionArticulo']}:")
-                        product = self.env['product.product'].create({
-                            'name': pieza['descripcionArticulo'],
-                            'default_code': pieza['refLocal'],
-                            'categ_id': category.id,
-                            'list_price': pieza['precio'] / 100,
-                            'weight': pieza['peso'],
-                            'image_1920': image_data,
-                            'principal_ref': pieza['refPrincipal'],
-                            'vehicle_id': pieza['idVehiculo'],
-                            'version_code': pieza['codVersion'],
-                            'article_code': pieza['codArticulo'],
-                            'stock_year': pieza['anyoStock'],
-                            'location': ubicacion_texto,
-                            'observations': pieza['observaciones'],
-                            'reserve': pieza['reserva'],
-                            'material_type': tipo_material_texto,
-                            'modification_date': formatted_date,
-                            'cod_almacen': pieza['codAlmacen'],
-                            'public_categ_ids': public_categ_ids,
-                            'website_published': True,
-                        })
-                    # Acceder a los vehículos
-                if len(response.json()['vehiculos']) == 0:
-                    print("No hay vehículos")
+            # 1. Procesar todos los vehículos
+            vehicles_dict = {}
+            for vehiculo in data.get('vehiculos', []):
+                vehicle_result, status = self._process_vehicle(vehiculo)
+                if vehicle_result:
+                    vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
+                    stats['vehicles'][status] += 1
                 else:
-                    print('VEHÍCULOS')
-                    for vehiculo in response.json()['vehiculos']:
-                        print('---')
-                        print(f"ID local: {vehiculo['idLocal']}")
-                        print(f"ID Empresa: {vehiculo['idEmpresa']}")
-                        print(f"Fecha de modificación: {vehiculo['fechaMod']}")
-                        print(f"Código: {vehiculo['codigo']}")
-                        print(f"Estado: {vehiculo['estado']}")
-                        print(f"Bastidor: {vehiculo['bastidor']}")
-                        print(f"Matrícula: {vehiculo['matricula']}")
-                        print(f"Color: {vehiculo['color']}")
-                        print(f"Kilometraje: {vehiculo['kilometraje']}")
-                        print(f"Año del vehículo: {vehiculo['anyoVehiculo']}")
-                        print(f"Código Motor: {vehiculo['codigoMotor']}")
-                        print(f"Código Cambio: {vehiculo['codigoCambio']}")
-                        print(f"Observaciones: {vehiculo['observaciones']}")
-                        print(f"Imagen/es:")
-                        for url in vehiculo['urlsImgs']:
-                            print(f"- URL: {url}")
-                        print(f"Código Marca: {vehiculo['codMarca']}")
-                        print(f"Nombre Marca: {vehiculo['nombreMarca']}")
-                        print(f"Código Modelo: {vehiculo['codModelo']}")
-                        print(f"Nombre Modelo: {vehiculo['nombreModelo']}")
-                        print(f"Código Versión: {vehiculo['codVersion']}")
-                        print(f"Nombre Versión: {vehiculo['nombreVersion']}")
-                        print(f"Tipo Versión: {vehiculo['tipoVersion']}")
-                        print(f"Combustible: {vehiculo['combustible']}")
-                        print(f"Puertas: {vehiculo['puertas']}")
-                        print(f"Año Inicio: {vehiculo['anyoInicio']}")
-                        print(f"Año Fin: {vehiculo['anyoFin']}")
-                        print(f"Tipos Motor: {vehiculo['tiposMotor']}")
-                        print(f"Potencia HP: {vehiculo['potenciaHP']}")
-                        print(f"Potencia KW: {vehiculo['potenciaKw']}")
-                        print(f"Cilindrada: {vehiculo['cilindrada']}")
-                        print(f"Transmisión: {vehiculo['transmision']}")
-                        print(f"Alimentación: {vehiculo['alimentacion']}")
-                        print(f"Número de marchas: {vehiculo['numMarchas']}")
-                        print(f"RV Code: {vehiculo['rvCode']}")
-                        print(f"K Type: {vehiculo['ktype']}")
-                        print('---')
+                    stats['vehicles']['skipped'] += 1
 
-                        image_data = None
-                        if vehiculo['urlsImgs']:
-                            first_image_url = vehiculo['urlsImgs'][0] + ".jpeg"
-                            image_data = self.fetch_image(first_image_url)
-                        # modification_date = self.parse_date(vehiculo['fechaMod'])
-                        name = f"{vehiculo['nombreMarca']} {vehiculo['nombreModelo']}" if vehiculo['nombreMarca'] and \
-                                                                                          vehiculo[
-                                                                                              'nombreModelo'] else "Vehiculo test"
-                        #                                <tr><td>ID local</td><td>{vehiculo['idLocal']}</td></tr>
-                        #                                <tr><td>ID Empresa</td><td>{vehiculo['idEmpresa']}</td></tr>
-                        #                                <tr><td>Fecha de modificación</td><td>{modification_date}</td></tr>
-                        # website_description = f"""
-                        #    <table>
-                        #        <tr><td>Código</td><td>{vehiculo['codigo']}</td></tr>
-                        #        <tr><td>Estado</td><td>{vehiculo['estado']}</td></tr>
-                        #        <tr><td>Bastidor</td><td>{vehiculo['bastidor']}</td></tr>
-                        #        <tr><td>Matrícula</td><td>{vehiculo['matricula']}</td></tr>
-                        #        <tr><td>Color</td><td>{vehiculo['color']}</td></tr>
-                        #        <tr><td>Kilometraje</td><td>{vehiculo['kilometraje']}</td></tr>
-                        #        <tr><td>Año del vehículo</td><td>{vehiculo['anyoVehiculo']}</td></tr>
-                        #        <tr><td>Código Motor</td><td>{vehiculo['codigoMotor']}</td></tr>
-                        #        <tr><td>Código Cambio</td><td>{vehiculo['codigoCambio']}</td></tr>
-                        #        <tr><td>Observaciones</td><td>{vehiculo['observaciones']}</td></tr>
-                        #        <tr><td>Código Marca</td><td>{vehiculo['codMarca']}</td></tr>
-                        #        <tr><td>Código Modelo</td><td>{vehiculo['codModelo']}</td></tr>
-                        #        <tr><td>Código Versión</td><td>{vehiculo['codVersion']}</td></tr>
-                        #        <tr><td>Nombre Versión</td><td>{vehiculo['nombreVersion']}</td></tr>
-                        #        <tr><td>Tipo Versión</td><td>{vehiculo['tipoVersion']}</td></tr>
-                        #        <tr><td>Combustible</td><td>{vehiculo['combustible']}</td></tr>
-                        #        <tr><td>Puertas</td><td>{vehiculo['puertas']}</td></tr>
-                        #        <tr><td>Año Inicio</td><td>{vehiculo['anyoInicio']}</td></tr>
-                        #        <tr><td>Año Fin</td><td>{vehiculo['anyoFin']}</td></tr>
-                        #        <tr><td>Tipos Motor</td><td>{vehiculo['tiposMotor']}</td></tr>
-                        #        <tr><td>Potencia HP</td><td>{vehiculo['potenciaHP']}</td></tr>
-                        #        <tr><td>Potencia KW</td><td>{vehiculo['potenciaKw']}</td></tr>
-                        #        <tr><td>Cilindrada</td><td>{vehiculo['cilindrada']}</td></tr>
-                        #        <tr><td>Transmisión</td><td>{vehiculo['transmision']}</td></tr>
-                        #        <tr><td>Alimentación</td><td>{vehiculo['alimentacion']}</td></tr>
-                        #        <tr><td>Número de marchas</td><td>{vehiculo['numMarchas']}</td></tr>
-                        #        <tr><td>RV Code</td><td>{vehiculo['rvCode']}</td></tr>
-                        #        <tr><td>K Type</td><td>{vehiculo['ktype']}</td></tr>
-                        #    </table>
-                        #    """
-                        filtered_vehiculo = {k: v for k, v in vehiculo.items() if
-                                             v not in [0, None, '', []] and k not in ['idLocal', 'idEmpresa',
-                                                                                      'urlsImgs']}
+            # 2. Procesar las piezas
+            for pieza in data.get('piezas', []):
+                status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
+                stats['pieces'][status] += 1
 
-                        # Construct the website description
-                        website_description = """
-                            <style>
-                                .product-card {
-                                    max-width: 500px;
-                                    font-family: Arial, sans-serif;
-                                    border-radius: 10px;
-                                    padding: 20px;
-                                    background-color: #fff;
-                                    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                                }
-                                .product-card h2 {
-                                    font-size: 20px;
-                                    font-weight: bold;
-                                    margin-bottom: 15px;
-                                }
-                                .product-card table {
-                                    width: 100%;
-                                    border-collapse: collapse;
-                                }
-                                .product-card td {
-                                    padding: 8px 0;
-                                    border-bottom: 1px solid #ddd;
-                                }
-                                .product-card td:first-child {
-                                    font-weight: bold;
-                                    width: 40%;
-                                }
-                                .product-card td:last-child {
-                                    text-align: right;
-                                    color: #333;
-                                }
-                            </style>
+            # 3. Mostrar resultados detallados
+            message = self._generate_results_message(stats)
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Proceso Completado',
+                    'message': message,
+                    'type': 'success',
+                    'sticky': True
+                }
+            }
 
-                            <div class="product-card">
-                                <h2>Ficha del producto</h2>
-                                <table>
-                        """
-
-                        for key, value in filtered_vehiculo.items():
-                            website_description += f"""
-                                    <tr>
-                                        <td>{key.replace("_", " ").capitalize()}</td>
-                                        <td>{value}</td>
-                                    </tr>
-                            """
-
-                        website_description += """
-                                </table>
-                            </div>
-                        """
-
-                        is_category = self.env['product.category'].search([
-                            ('default_code', '=', 'VEH'),
-                            ('name', '=', 'Vehículos')
-                        ])
-                        if is_category:
-                            print(f"La categoría Vehículos ya existe en la base de datos")
-                            category = is_category
-                        else:
-                            print(f"Creando la categoría Vehículos:")
-                            category = self.env['product.category'].create({
-                                'name': 'Vehículos',
-                                'default_code': 'VEH',
-                                'parent_id': 1,
-                            })
-                            print(f"Categoría {category.name} creada")
-
-                        if not category:
-                            raise UserError("La categoría 'Vehículos' no se ha podido crear.")
-
-                        # Primero, busca o crea la categoría padre de vehículos
-                        vehiculos_public_category = self.env['product.public.category'].search([
-                            ('name', '=', 'Vehículos')
-                        ], limit=1)
-
-                        if not vehiculos_public_category:
-                            vehiculos_public_category = self.env['product.public.category'].create({
-                                'name': 'Vehículos',
-                                'sequence': 1,
-                            })
-
-                        # Luego, crea la subcategoría usando vehiculos_public_category como padre
-                        existing_category = self.env['product.public.category'].search([
-                            ('name', '=', name),
-                            ('idLocal', '=', vehiculo['idLocal']),
-                            ('idEmpresa', '=', vehiculo['idEmpresa'])
-                        ], limit=1)
-
-                        print(f"Existing category: {existing_category}")
-                        if not existing_category:
-                            existing_category = self.env['product.public.category'].create({
-                                'name': name,
-                                'idLocal': vehiculo['idLocal'],
-                                'idEmpresa': vehiculo['idEmpresa'],
-                                'parent_id': vehiculos_public_category.id,
-                                'image_1920': image_data,
-                                'website_description': website_description,
-                                'sequence': 10
-                            })
-                        else:
-                            print(f"Updating category: {existing_category.name}")
-                            existing_category.write({
-                                'image_1920': image_data,
-                                'website_description': website_description,
-                            })
-
-                        image_data_vehicle = None
-                        if vehiculo['urlsImgs']:
-                            first_image_url = vehiculo['urlsImgs'][0] + ".jpeg"
-                            image_data_vehicle = self.fetch_image(first_image_url)
-                        print(f"Creating product with reference {vehiculo['idLocal']}")
-
-                        if not existing_category or not existing_category.id:
-                            raise UserError("La categoría del vehículo no se ha creado correctamente.")
-
-                        existing_product = self.env['product.template'].search([
-                            ('default_code', '=', vehiculo['idLocal'])
-                        ], limit=1)
-
-                        if existing_product:
-                            print(f"Actualizando producto existente: {existing_product.name}")
-                            existing_product.write({
-                                'image_1920': image_data_vehicle,
-                                'public_categ_ids': [(6, 0, [existing_category.id])],
-                                'website_published': True,
-                                'name': name,
-                                'is_vehicle': True,  # <- Actualiza también si ya existe
-                            })
-                        else:
-                            print(f"Creando producto nuevo para el vehículo: {name}")
-                            self.env['product.template'].create({
-                                'name': name,
-                                'default_code': vehiculo['idLocal'],
-                                'image_1920': image_data_vehicle,
-                                'purchase_ok': False,
-                                'sale_ok': False,
-                                'website_published': True,
-                                'list_price': 0,
-                                'categ_id': category.id,
-                                'is_vehicle': True,  # <- Aquí se indica que es un vehículo
-                            })
-
-                        product_templates = self.env['product.template'].search([
-                            ('vehicle_id', '=', vehiculo['idLocal'])
-                        ])
-
-                        # Primero actualizamos los productos
-                        if product_templates:
-                            for product_template in product_templates:
-                                print(f"Actualizando plantilla de producto: {product_template.name}")
-                                product_template.write({
-                                    'public_categ_ids': [(4, existing_category.id, False)]
-                                })
-
-                        # Luego actualizamos la categoría
-                        if existing_category:
-                            try:
-                                existing_category.write({
-                                    'image_1920': image_data,
-                                    'website_description': website_description,
-                                    'sequence': 10
-                                })
-                            except Exception as e:
-                                print(f"Error al actualizar la categoría: {e}")
-                                # En caso de error, intentamos mover los productos a otra categoría
-                                default_category = self.env['product.public.category'].search([
-                                    ('name', '=', 'Vehículos')
-                                ], limit=1)
-                                if default_category and product_templates:
-                                    for product_template in product_templates:
-                                        product_template.write({
-                                            'public_categ_ids': [(4, default_category.id, False)]
-                                        })
-
-                print("*" * 80)
-                return response.json()
         except requests.exceptions.RequestException as e:
             raise UserError(f"Error al realizar la solicitud: {e}")
+        except Exception as e:
+            raise UserError(f"Error inesperado: {e}")
 
-    # def parse_date(date_str):
-    #     try:
-    #         return datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
-    #     except ValueError:
-    #         return None
+    def _process_vehicle(self, vehiculo_data):
+        """Procesa un vehículo y devuelve el registro y el estado"""
+        id_local = vehiculo_data.get('idLocal')
+        if not id_local:
+            print("Vehículo sin ID local, saltando...")
+            return None, 'skipped'
+
+        existing_vehicle = self.env['product.vehicle'].search([
+            ('id_local', '=', str(id_local))
+        ], limit=1)
+
+        # Convertir campos numéricos
+        def safe_int(val):
+            try:
+                return int(val) if val not in (None, '', False) else 0
+            except (ValueError, TypeError):
+                return 0
+
+        def safe_float(val):
+            try:
+                return float(val) if val not in (None, '', False) else 0.0
+            except (ValueError, TypeError):
+                return 0.0
+
+        # Construir nombre
+        nombre_marca = vehiculo_data.get('nombreMarca', '')
+        nombre_modelo = vehiculo_data.get('nombreModelo', '')
+        nombre_version = vehiculo_data.get('nombreVersion', '')
+        vehicle_name = f"{nombre_marca} {nombre_modelo} {nombre_version}".strip()
+        if not vehicle_name:
+            vehicle_name = f"Vehículo {id_local}"
+
+        # Preparar valores
+        vehicle_vals = {
+            'name': vehicle_name,
+            'id_local': str(id_local),
+            'id_empresa': str(vehiculo_data.get('idEmpresa', '')),
+            'codigo': vehiculo_data.get('codigo', ''),
+            'estado': vehiculo_data.get('estado', ''),
+            'bastidor': vehiculo_data.get('bastidor', ''),
+            'matricula': vehiculo_data.get('matricula', ''),
+            'color': vehiculo_data.get('color', ''),
+            'kilometraje': safe_int(vehiculo_data.get('kilometraje')),
+            'anyo_vehiculo': safe_int(vehiculo_data.get('anyoVehiculo')),
+            'codigo_motor': vehiculo_data.get('codigoMotor', ''),
+            'codigo_cambio': vehiculo_data.get('codigoCambio', ''),
+            'observaciones': vehiculo_data.get('observaciones', ''),
+            'cod_marca': vehiculo_data.get('codMarca', ''),
+            'nombre_marca': nombre_marca,
+            'cod_modelo': vehiculo_data.get('codModelo', ''),
+            'nombre_modelo': nombre_modelo,
+            'cod_version': vehiculo_data.get('codVersion', ''),
+            'nombre_version': nombre_version,
+            'tipo_version': vehiculo_data.get('tipoVersion', ''),
+            'combustible': vehiculo_data.get('combustible', ''),
+            'puertas': safe_int(vehiculo_data.get('puertas')),
+            'anyo_inicio': safe_int(vehiculo_data.get('anyoInicio')),
+            'anyo_fin': safe_int(vehiculo_data.get('anyoFin')),
+            'tipos_motor': vehiculo_data.get('tiposMotor', ''),
+            'potencia_hp': safe_float(vehiculo_data.get('potenciaHP')),
+            'potencia_kw': safe_float(vehiculo_data.get('potenciaKw')),
+            'cilindrada': safe_int(vehiculo_data.get('cilindrada')),
+            'transmision': vehiculo_data.get('transmision', ''),
+            'alimentacion': vehiculo_data.get('alimentacion', ''),
+            'num_marchas': safe_int(vehiculo_data.get('numMarchas')),
+            'rv_code': vehiculo_data.get('rvCode', ''),
+            'ktype': vehiculo_data.get('ktype', ''),
+            'urls_imgs': ', '.join(vehiculo_data.get('urlsImgs', [])),
+            'website_published': True,
+        }
+
+        # Manejar fecha de modificación
+        if 'fechaMod' in vehiculo_data:
+            fecha_str = vehiculo_data['fechaMod']
+
+            try:
+                # Parsear la fecha tal como viene de la API (formato ISO)
+                fecha_mod = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S')
+                vehicle_vals['fecha_mod'] = fecha_mod
+            except ValueError:
+                try:
+                    # Intentar con formato alternativo dd/mm/yyyy
+                    fecha_mod = datetime.strptime(fecha_str, '%d/%m/%Y %H:%M:%S')
+                    vehicle_vals['fecha_mod'] = fecha_mod
+                except (ValueError, TypeError) as e:
+                    print(f"Error convirtiendo fechaMod: {e}")
+                    print(f"Formato recibido: {fecha_str}")
+            else:
+                try:
+                    # Intentar con formato ISO (formato principal de la API)
+                    fecha_mod = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S')
+                    vehicle_vals['fecha_mod'] = fecha_mod
+                except ValueError:
+                    try:
+                        # Intentar con formato alternativo dd/mm/yyyy
+                        fecha_mod = datetime.strptime(fecha_str, '%d/%m/%Y %H:%M:%S')
+                        vehicle_vals['fecha_mod'] = fecha_mod
+                    except (ValueError, TypeError) as e:
+                        print(f"Error convirtiendo fechaMod: {e}")
+                        print(f"Formato recibido: {fecha_str}")
+
+        # Crear o actualizar vehículo
+        try:
+            if existing_vehicle:
+                print(f"Actualizando vehículo ID {id_local}")
+                existing_vehicle.write(vehicle_vals)
+                return existing_vehicle, 'updated'
+            else:
+                print(f"Creando nuevo vehículo ID {id_local}")
+                return self.env['product.vehicle'].create(vehicle_vals), 'created'
+        except Exception as e:
+            print(f"Error procesando vehículo {id_local}: {str(e)}")
+            return None, 'error'
+
+    def _process_piece(self, pieza, situacion_map, type_material_map, vehicles_dict):
+        """Procesa una pieza y devuelve el estado de la operación"""
+        try:
+            # Validar datos mínimos
+            ref_local = pieza.get('refLocal', '')
+            descripcion = pieza.get('descripcionArticulo', '')
+
+            if not ref_local or not descripcion:
+                print("Pieza sin referencia local o descripción, saltando...")
+                return 'skipped'
+
+            # Obtener imagen
+            image_data = None
+            if pieza.get('urlsImgs'):
+                first_image_url = pieza['urlsImgs'][0] + ".jpeg"
+                image_data = self.fetch_image(first_image_url)
+
+            # Mapear ubicación y tipo de material
+            ubicacion = pieza.get('ubicacion', 9)
+            ubicacion_texto = situacion_map.get(ubicacion, "Situación Desconocida")
+
+            tipo_material = pieza.get('tipoMaterial', 3)
+            tipo_material_texto = type_material_map.get(tipo_material, "Tipo Desconocido")
+
+            # Formatear fecha
+            date_str = pieza.get('fechaMod', '')
+            formatted_date = ''
+            if date_str:
+                try:
+                    date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
+                    formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    pass
+
+            # Buscar vehículo relacionado
+            vehicle_id = None
+            id_vehiculo = str(pieza.get('idVehiculo', ''))
+            if id_vehiculo and id_vehiculo != '0':
+                vehicle = vehicles_dict.get(id_vehiculo)
+                if vehicle:
+                    vehicle_id = vehicle.id
+                    print(f"Relacionando pieza con vehículo ID {id_vehiculo}")
+                else:
+                    print(f"Vehículo ID {id_vehiculo} no encontrado para pieza {ref_local}")
+
+            # Buscar o crear categoría
+            category = self._get_or_create_category(pieza)
+
+            # Buscar producto existente
+            product = self.env['product.template'].search([
+                ('default_code', '=', ref_local)
+            ], limit=1)
+
+            # Preparar valores
+            vals = {
+                'name': descripcion,
+                'default_code': ref_local,
+                'categ_id': category.id,
+                'list_price': (pieza.get('precio', 0) or 0) / 100,
+                'weight': pieza.get('peso', 0),
+                'image_1920': image_data,
+                'principal_ref': pieza.get('refPrincipal', ''),
+                'version_code': pieza.get('codVersion', ''),
+                'article_code': pieza.get('codArticulo', ''),
+                'stock_year': pieza.get('anyoStock', ''),
+                'location': ubicacion_texto,
+                'observations': pieza.get('observaciones', ''),
+                'reserve': pieza.get('reserva', ''),
+                'material_type': tipo_material_texto,
+                'modification_date': formatted_date,
+                'cod_almacen': pieza.get('codAlmacen', ''),
+                'website_published': True,
+                'product_vehicle_id': vehicle_id,  # Relación con el vehículo
+            }
+
+            if product:
+                print(f"Actualizando pieza {ref_local} - {descripcion}")
+                product.write(vals)
+                return 'updated'
+            else:
+                print(f"Creando pieza {ref_local} - {descripcion}")
+                # Crear categorías públicas
+                public_categ_ids = self._get_or_create_public_categories(pieza)
+                vals['public_categ_ids'] = [(6, 0, public_categ_ids)]
+                self.env['product.template'].create(vals)
+                return 'created'
+
+        except Exception as e:
+            print(f"Error procesando pieza {pieza.get('refLocal', 'N/A')}: {str(e)}")
+            return 'error'
+
+    def _get_or_create_category(self, pieza):
+        """Obtiene o crea la categoría de producto"""
+        cod_familia = pieza.get('codFamilia', '')
+        desc_familia = pieza.get('descripcionFamilia', '')
+
+        if not cod_familia or not desc_familia:
+            return self.env.ref('product.product_category_all')
+
+        category = self.env['product.category'].search([
+            ('default_code', '=', cod_familia)
+        ], limit=1)
+
+        if not category:
+            category = self.env['product.category'].create({
+                'name': desc_familia,
+                'default_code': cod_familia,
+                'parent_id': self.env.ref('product.product_category_1').id,
+            })
+            print(f"Categoría creada: {desc_familia}")
+
+        return category
+
+    def _get_or_create_public_categories(self, pieza):
+        """Obtiene o crea categorías públicas"""
+        # Categoría padre "Vehículos"
+        vehiculos_categ = self.env['product.public.category'].search([
+            ('name', '=', 'Vehículos')
+        ], limit=1)
+
+        if not vehiculos_categ:
+            vehiculos_categ = self.env['product.public.category'].create({
+                'name': 'Vehículos',
+                'sequence': 1
+            })
+
+        # Categoría específica
+        desc_familia = pieza.get('descripcionFamilia', '')
+        if not desc_familia:
+            return [vehiculos_categ.id]
+
+        familia_categ = self.env['product.public.category'].search([
+            ('name', '=', desc_familia)
+        ], limit=1)
+
+        if not familia_categ:
+            familia_categ = self.env['product.public.category'].create({
+                'name': desc_familia,
+                'parent_id': vehiculos_categ.id,
+                'sequence': 10
+            })
+
+        return [vehiculos_categ.id, familia_categ.id]
+
+    def _generate_results_message(self, stats):
+        """Genera el mensaje de resultados con estadísticas"""
+        # Estadísticas de vehículos
+        v_created = stats['vehicles']['created']
+        v_updated = stats['vehicles']['updated']
+        v_skipped = stats['vehicles']['skipped']
+        v_error = stats['vehicles']['error']
+        v_total = v_created + v_updated + v_skipped + v_error
+
+        # Estadísticas de piezas
+        p_created = stats['pieces']['created']
+        p_updated = stats['pieces']['updated']
+        p_skipped = stats['pieces']['skipped']
+        p_error = stats['pieces']['error']
+        p_total = p_created + p_updated + p_skipped + p_error
+
+        # Construir mensaje
+        message = f"""
+        Resumen del Procesamiento:
+
+           (1) Vehículos: Total procesados: {v_total}, creados: {v_created}, actualizados: {v_updated}, omitidos: {v_skipped} y errores: {v_error};
+           (2) Piezas: Total procesadas: {p_total}, creadas: {p_created}, actualizadas: {p_updated}, omitidas: {p_skipped} y errores: {p_error};
+           (3) Relaciones: Piezas relacionadas con vehículos: {p_created + p_updated - p_skipped}.
+        """
+
+        return message
 
     @staticmethod
     def fetch_image(url):
+        """Obtiene imagen desde URL"""
         try:
-            response = requests.get(url)
-            response.raise_for_status()  # Raise an HTTPError for bad responses
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
             return base64.b64encode(response.content)
         except requests.exceptions.RequestException as e:
-            # Handle the error (e.g., log it, return None, etc.)
-            print(f"Error fetching image from {url}: {e}")
+            print(f"Error obteniendo imagen: {e}")
             return None

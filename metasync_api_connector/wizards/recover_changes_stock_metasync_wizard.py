@@ -168,6 +168,7 @@ class RecoverChangesStockMetasyncWizard(models.TransientModel):
                     print(f"K Type: {vehiculo['ktype']}")
                     print('---')
             print("*" * 80)
+            
             return response.json()
         except requests.exceptions.RequestException as e:
             raise UserError(f"Error al realizar la solicitud: {e}")

@@ -202,20 +202,7 @@
     </record>
 
 
-    <!-- List view for product.vehicle -->
-    <record id="product_vehicle_list_view" model="ir.ui.view">
-        <field name="name">product.vehicle.list</field>
-        <field name="model">product.vehicle</field>
-        <field name="arch" type="xml">
-            <list>
-                <field name="name"/>
-                <field name="products_count"/>
-                <field name="website_published" widget="boolean_toggle"/>
-            </list>
-        </field>
-    </record>
-
-    <!-- This view is used to create and edit vehicle records -->
+<!-- This view is used to create and edit vehicle records -->
     <record id="product_vehicle_form_view" model="ir.ui.view">
         <field name="name">product.vehicle.form</field>
         <field name="model">product.vehicle</field>
@@ -232,34 +219,226 @@
                             <field name="is_published" widget="website_publish_button"/>
                         </button>
                     </div>
+
                     <group>
-                        <field name="name" placeholder="Insert vehicle name"/>
-                        <field name="description"/>
-                        <field name="website_ribbon_id"/>
-                        <field name="products_count" readonly="1"/>
+                        <group name="basic_info" string="Basic Information">
+                            <field name="name" placeholder="Insert vehicle name"/>
+                            <field name="description"/>
+                            <field name="website_ribbon_id"/>
+                            <field name="products_count" readonly="1"/>
+                            <field name="is_published"/>
+                        </group>
+
+                        <group name="metasync_info" string="Metasync Information">
+                            <field name="id_local"/>
+                            <field name="id_empresa"/>
+                            <field name="fecha_mod"/>
+                            <field name="codigo"/>
+                            <field name="estado"/>
+                        </group>
                     </group>
-                    <group name="product_template_images" string="Images of vehicle">
-                        <field
-                            name="product_image_ids"
-                            colspan="2"
-                            widget="x2_many_media_viewer"
-                            options="{'convert_to_webp': True}"
-                            mode="kanban"
-                            context="{'default_name': name}"
-                            add-label="Add Images"
-                            nolabel="1"/>
-                    </group>
+
+                    <notebook>
+                        <page name="vehicle_data" string="Vehicle Data">
+                            <group>
+                                <group name="physical_data" string="Physical Data">
+                                    <field name="bastidor"/>
+                                    <field name="matricula"/>
+                                    <field name="color"/>
+                                    <field name="kilometraje"/>
+                                    <field name="anyo_vehiculo"/>
+                                    <field name="codigo_motor"/>
+                                    <field name="codigo_cambio"/>
+                                    <field name="observaciones"/>
+                                </group>
+
+                                <group name="brand_model" string="Brand &amp; Model">
+                                    <field name="cod_marca"/>
+                                    <field name="nombre_marca"/>
+                                    <field name="cod_modelo"/>
+                                    <field name="nombre_modelo"/>
+                                    <field name="cod_version"/>
+                                    <field name="nombre_version"/>
+                                    <field name="tipo_version"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page name="technical_specs" string="Technical Specifications">
+                            <group>
+                                <group name="engine_specs" string="Engine Specifications">
+                                    <field name="combustible"/>
+                                    <field name="tipos_motor"/>
+                                    <field name="potencia_hp"/>
+                                    <field name="potencia_kw"/>
+                                    <field name="cilindrada"/>
+                                    <field name="alimentacion"/>
+                                </group>
+
+                                <group name="vehicle_specs" string="Vehicle Specifications">
+                                    <field name="puertas"/>
+                                    <field name="anyo_inicio"/>
+                                    <field name="anyo_fin"/>
+                                    <field name="transmision"/>
+                                    <field name="num_marchas"/>
+                                </group>
+                            </group>
+
+                            <group>
+                                <group name="additional_codes" string="Additional Codes">
+                                    <field name="rv_code"/>
+                                    <field name="ktype"/>
+                                </group>
+
+                                <group name="images_urls" string="Image URLs">
+                                    <field name="urls_imgs" widget="text"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page name="images" string="Images">
+                            <group name="product_template_images" string="Images of vehicle">
+                                <field
+                                    name="product_image_ids"
+                                    colspan="2"
+                                    widget="x2_many_media_viewer"
+                                    options="{'convert_to_webp': True}"
+                                    mode="kanban"
+                                    context="{'default_name': name}"
+                                    add-label="Add Images"
+                                    nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Window action to open the vehicle list -->
+    <!-- List view for product.vehicle - Updated with more fields -->
+    <record id="product_vehicle_list_view" model="ir.ui.view">
+        <field name="name">product.vehicle.list</field>
+        <field name="model">product.vehicle</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="id_local"/>
+                <field name="nombre_marca"/>
+                <field name="nombre_modelo"/>
+                <field name="anyo_vehiculo"/>
+                <field name="matricula"/>
+                <field name="products_count"/>
+                <field name="estado"/>
+                <field name="website_published" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view for product.vehicle -->
+    <record id="product_vehicle_search_view" model="ir.ui.view">
+        <field name="name">product.vehicle.search</field>
+        <field name="model">product.vehicle</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="id_local"/>
+                <field name="bastidor"/>
+                <field name="matricula"/>
+                <field name="nombre_marca"/>
+                <field name="nombre_modelo"/>
+                <field name="codigo"/>
+                <filter string="Published" name="published" domain="[('is_published', '=', True)]"/>
+                <filter string="Unpublished" name="unpublished" domain="[('is_published', '=', False)]"/>
+                <filter string="With Metasync ID" name="with_metasync_id" domain="[('id_local', '!=', False)]"/>
+                <filter string="Without Metasync ID" name="without_metasync_id" domain="[('id_local', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Brand" name="group_by_brand" domain="[]" context="{'group_by': 'nombre_marca'}"/>
+                    <filter string="Model" name="group_by_model" domain="[]" context="{'group_by': 'nombre_modelo'}"/>
+                    <filter string="Year" name="group_by_year" domain="[]" context="{'group_by': 'anyo_vehiculo'}"/>
+                    <filter string="State" name="group_by_state" domain="[]" context="{'group_by': 'estado'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Kanban view for product.vehicle -->
+    <record id="product_vehicle_kanban_view" model="ir.ui.view">
+        <field name="name">product.vehicle.kanban</field>
+        <field name="model">product.vehicle</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="id_local"/>
+                <field name="nombre_marca"/>
+                <field name="nombre_modelo"/>
+                <field name="anyo_vehiculo"/>
+                <field name="products_count"/>
+                <field name="product_image_ids"/>
+                <field name="is_published"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <t t-if="record.product_image_ids.raw_value.length > 0">
+                                    <img t-att-src="'/web/image/product.image/' + record.product_image_ids.raw_value[0] + '/image_1920'"
+                                         alt="Vehicle Image" class="o_kanban_image"/>
+                                </t>
+                                <t t-else="">
+                                    <div class="o_kanban_image_placeholder">
+                                        <i class="fa fa-car fa-3x text-muted"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <t t-esc="record.name.value"/>
+                                        </strong>
+                                        <t t-if="record.id_local.value">
+                                            <small class="text-muted">(ID: <t t-esc="record.id_local.value"/>)</small>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <t t-if="record.nombre_marca.value">
+                                        <div><strong>Brand:</strong> <t t-esc="record.nombre_marca.value"/></div>
+                                    </t>
+                                    <t t-if="record.nombre_modelo.value">
+                                        <div><strong>Model:</strong> <t t-esc="record.nombre_modelo.value"/></div>
+                                    </t>
+                                    <t t-if="record.anyo_vehiculo.value">
+                                        <div><strong>Year:</strong> <t t-esc="record.anyo_vehiculo.value"/></div>
+                                    </t>
+                                    <div class="badge badge-info">
+                                        <t t-esc="record.products_count.value"/> products
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <t t-if="record.is_published.value">
+                                        <span class="badge badge-success">Published</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge badge-secondary">Unpublished</span>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Updated window action to include kanban view -->
     <record id="action_product_vehicle" model="ir.actions.act_window">
         <field name="name">Vehicle</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">product.vehicle</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_published': 1}</field>
     </record>
 
     <!-- Menu item for the vehicle -->
