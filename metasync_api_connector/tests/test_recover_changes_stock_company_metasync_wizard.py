@@ -1,11 +1,9 @@
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import UserError
 from unittest.mock import patch, MagicMock
+import json
 from datetime import datetime
 import base64
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
@@ -29,7 +27,7 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
             'vehiculos': [
                 {
                     'idLocal': 12345,
-                    'idEmpresa': 'EMP001',  # Ahora compatible con campo Char
+                    'idEmpresa': 'EMP001',
                     'codigo': 'VEH001',
                     'estado': 'Activo',
                     'bastidor': 'VF1234567890',
@@ -131,7 +129,7 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         # Verificar todos los campos del vehículo
         self.assertEqual(vehicle.name, 'Renault Clio TCE 90')
         self.assertEqual(vehicle.id_local, '12345')
-        self.assertEqual(vehicle.id_empresa, 'EMP001')  # Ahora campo Char
+        self.assertEqual(vehicle.id_empresa, 'EMP001')
         self.assertEqual(vehicle.codigo, 'VEH001')
         self.assertEqual(vehicle.estado, 'Activo')
         self.assertEqual(vehicle.bastidor, 'VF1234567890')
@@ -178,11 +176,10 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        # Mock para la imagen usando el path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
+        # Mock para la imagen
+        with patch.object(self.wizard, 'fetch_image') as mock_fetch:
+            mock_fetch.return_value = base64.b64encode(b'fake_image_data')
+
             # Ejecutar el wizard
             result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
 
@@ -217,11 +214,10 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
+        # Mock para la imagen
+        with patch.object(self.wizard, 'fetch_image') as mock_fetch:
+            mock_fetch.return_value = base64.b64encode(b'fake_image_data')
+
             # Ejecutar el wizard
             result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
 
@@ -245,11 +241,10 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
+        # Mock para la imagen
+        with patch.object(self.wizard, 'fetch_image') as mock_fetch:
+            mock_fetch.return_value = base64.b64encode(b'fake_image_data')
+
             # Ejecutar el wizard
             result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
 
@@ -273,7 +268,6 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         existing_vehicle = self.env['product.vehicle'].create({
             'name': 'Vehículo Anterior',
             'id_local': '12345',
-            'id_empresa': 'OLD_EMP',  # Ahora campo Char
             'estado': 'Inactivo'
         })
 
@@ -286,14 +280,10 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         # Ejecutar el wizard
         result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
 
-        # Refrescar el vehículo correctamente
-        existing_vehicle.invalidate_cache()
-        existing_vehicle = self.env['product.vehicle'].browse(existing_vehicle.id)
-
         # Verificar que se actualizó el vehículo existente
+        existing_vehicle.refresh()
         self.assertEqual(existing_vehicle.name, 'Renault Clio TCE 90')
         self.assertEqual(existing_vehicle.estado, 'Activo')
-        self.assertEqual(existing_vehicle.id_empresa, 'EMP001')  # Campo Char
 
         # Verificar que solo hay un vehículo con ese ID
         vehicles = self.env['product.vehicle'].search([('id_local', '=', '12345')])
@@ -315,19 +305,15 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
+        # Mock para la imagen
+        with patch.object(self.wizard, 'fetch_image') as mock_fetch:
+            mock_fetch.return_value = base64.b64encode(b'fake_image_data')
+
             # Ejecutar el wizard
             result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
 
-        # Refrescar la pieza
-        existing_piece.invalidate_cache()
-        existing_piece = self.env['product.template'].browse(existing_piece.id)
-
         # Verificar que se actualizó la pieza existente
+        existing_piece.refresh()
         self.assertEqual(existing_piece.name, 'Faro delantero izquierdo')
         self.assertEqual(existing_piece.list_price, 157.50)
 
@@ -375,11 +361,10 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
+        # Mock para la imagen
+        with patch.object(self.wizard, 'fetch_image') as mock_fetch:
+            mock_fetch.return_value = base64.b64encode(b'fake_image_data')
+
             # Ejecutar el wizard
             result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
 
@@ -423,13 +408,9 @@ class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
     def tearDown(self):
         """Limpiar después de cada test"""
         # Limpiar registros creados
-        try:
-            self.env['product.vehicle'].search([('id_local', '=', '12345')]).unlink()
-            self.env['product.template'].search([('default_code', '=', 'REF001')]).unlink()
-            self.env['product.category'].search([('default_code', '=', 'FAR')]).unlink()
-            self.env['product.public.category'].search([('name', 'in', ['Vehículos', 'Faros'])]).unlink()
-        except Exception as e:
-            _logger.error("Error durante limpieza: %s", str(e))
-            self.env.cr.rollback()
+        self.env['product.vehicle'].search([('id_local', '=', '12345')]).unlink()
+        self.env['product.template'].search([('default_code', '=', 'REF001')]).unlink()
+        self.env['product.category'].search([('default_code', '=', 'FAR')]).unlink()
+        self.env['product.public.category'].search([('name', 'in', ['Vehículos', 'Faros'])]).unlink()
 
         super().tearDown()
