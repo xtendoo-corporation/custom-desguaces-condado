@@ -1,435 +1,405 @@
-from odoo.tests.common import TransactionCase
+from odoo import models, fields, api
 from odoo.exceptions import UserError
-from unittest.mock import patch, MagicMock
-from datetime import datetime
 import base64
-import logging
+import requests
+from datetime import datetime
 
-_logger = logging.getLogger(__name__)
 
+class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
+    _name = 'recover.changes.stock.company.metasync.wizard'
+    _description = 'Recuperar Cambios Stock Company Metasync'
 
-class TestRecoverChangesStockCompanyMetasyncWizard(TransactionCase):
+    fecha = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
+    lastid = fields.Char(string='Last ID', required=True, default="0")
+    offset = fields.Integer(string='Offset', required=True, default=10)
 
-    def setUp(self):
-        super().setUp()
+    def recuperar_cambios_almacen_empresa_metasync(self):
+        self.ensure_one()
+        api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey', default=None)
+        if not api_key:
+            raise UserError("No está bien configurado el parámetro 'metasync.inventory.apikey' o no es correcto.")
 
-        # Configurar parámetros del sistema
-        self.env['ir.config_parameter'].sudo().set_param('metasync.inventory.apikey', 'test_api_key_123')
-        self.env['ir.config_parameter'].sudo().set_param('metasync.id_empresa', 'test_empresa_456')
+        idempresa = self.env['ir.config_parameter'].sudo().get_param('metasync.id_empresa', default=None)
+        if not idempresa:
+            raise UserError("No está bien configurado el parámetro 'metasync.id_empresa' o no es correcto.")
 
-        # Crear el wizard
-        self.wizard = self.env['recover.changes.stock.company.metasync.wizard'].create({
-            'fecha': datetime(2024, 1, 30, 15, 42, 33),
-            'lastid': '100',
-            'offset': 5
-        })
-
-        # Datos de prueba simulando respuesta de API
-        self.mock_api_response = {
-            'vehiculos': [
-                {
-                    'idLocal': 12345,
-                    'idEmpresa': 'EMP001',  # Ahora compatible con campo Char
-                    'codigo': 'VEH001',
-                    'estado': 'Activo',
-                    'bastidor': 'VF1234567890',
-                    'matricula': '1234ABC',
-                    'color': 'Azul',
-                    'kilometraje': 150000,
-                    'anyoVehiculo': 2018,
-                    'codigoMotor': 'MOT123',
-                    'codigoCambio': 'CAM456',
-                    'observaciones': 'Vehículo en buen estado',
-                    'codMarca': 'REN',
-                    'nombreMarca': 'Renault',
-                    'codModelo': 'CLIO',
-                    'nombreModelo': 'Clio',
-                    'codVersion': 'TCE90',
-                    'nombreVersion': 'TCE 90',
-                    'tipoVersion': 'Gasolina',
-                    'combustible': 'Gasolina',
-                    'puertas': 5,
-                    'anyoInicio': 2016,
-                    'anyoFin': 2020,
-                    'tiposMotor': 'TCE',
-                    'potenciaHP': 90.5,
-                    'potenciaKw': 67.2,
-                    'cilindrada': 898,
-                    'transmision': 'Manual',
-                    'alimentacion': 'Inyección',
-                    'numMarchas': 5,
-                    'rvCode': 'RV123',
-                    'ktype': 'KT456',
-                    'urlsImgs': ['https://example.com/img1', 'https://example.com/img2'],
-                    'fechaMod': '2024-01-30T15:42:33'
-                }
-            ],
-            'piezas': [
-                {
-                    'refLocal': 'REF001',
-                    'descripcionArticulo': 'Faro delantero izquierdo',
-                    'idVehiculo': 12345,
-                    'precio': 15750,  # En centavos
-                    'peso': 2.5,
-                    'refPrincipal': 'PRIN001',
-                    'codVersion': 'VER001',
-                    'codArticulo': 'ART001',
-                    'anyoStock': '2024',
-                    'ubicacion': 1,  # Almacenada
-                    'observaciones': 'Pieza original',
-                    'reserva': 'No',
-                    'tipoMaterial': 0,  # Revisado
-                    'codAlmacen': 'ALM001',
-                    'codFamilia': 'FAR',
-                    'descripcionFamilia': 'Faros',
-                    'urlsImgs': ['https://example.com/pieza1'],
-                    'fechaMod': '2024-01-30T15:42:33'
-                }
-            ]
+        headers = {
+            'apiKey': api_key,
+            'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
+            'lastid': self.lastid,
+            'offset': str(self.offset),
+            'idempresa': idempresa
         }
 
-    def test_configuration_missing_api_key(self):
-        """Test que falla cuando falta la API key"""
-        # Eliminar parámetro
-        self.env['ir.config_parameter'].sudo().search([
-            ('key', '=', 'metasync.inventory.apikey')
-        ]).unlink()
-
-        with self.assertRaises(UserError) as cm:
-            self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        self.assertIn("metasync.inventory.apikey", str(cm.exception))
-
-    def test_configuration_missing_empresa_id(self):
-        """Test que falla cuando falta el ID de empresa"""
-        # Eliminar parámetro
-        self.env['ir.config_parameter'].sudo().search([
-            ('key', '=', 'metasync.id_empresa')
-        ]).unlink()
-
-        with self.assertRaises(UserError) as cm:
-            self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        self.assertIn("metasync.id_empresa", str(cm.exception))
-
-    @patch('requests.get')
-    def test_vehicle_creation_complete(self, mock_get):
-        """Test creación completa de vehículo con todos los datos"""
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Ejecutar el wizard
-        result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Verificar que se creó el vehículo
-        vehicle = self.env['product.vehicle'].search([('id_local', '=', '12345')])
-        self.assertTrue(vehicle, "El vehículo debería haberse creado")
-
-        # Verificar todos los campos del vehículo
-        self.assertEqual(vehicle.name, 'Renault Clio TCE 90')
-        self.assertEqual(vehicle.id_local, '12345')
-        self.assertEqual(vehicle.id_empresa, 'EMP001')  # Ahora campo Char
-        self.assertEqual(vehicle.codigo, 'VEH001')
-        self.assertEqual(vehicle.estado, 'Activo')
-        self.assertEqual(vehicle.bastidor, 'VF1234567890')
-        self.assertEqual(vehicle.matricula, '1234ABC')
-        self.assertEqual(vehicle.color, 'Azul')
-        self.assertEqual(vehicle.kilometraje, 150000)
-        self.assertEqual(vehicle.anyo_vehiculo, 2018)
-        self.assertEqual(vehicle.codigo_motor, 'MOT123')
-        self.assertEqual(vehicle.codigo_cambio, 'CAM456')
-        self.assertEqual(vehicle.observaciones, 'Vehículo en buen estado')
-        self.assertEqual(vehicle.cod_marca, 'REN')
-        self.assertEqual(vehicle.nombre_marca, 'Renault')
-        self.assertEqual(vehicle.cod_modelo, 'CLIO')
-        self.assertEqual(vehicle.nombre_modelo, 'Clio')
-        self.assertEqual(vehicle.cod_version, 'TCE90')
-        self.assertEqual(vehicle.nombre_version, 'TCE 90')
-        self.assertEqual(vehicle.tipo_version, 'Gasolina')
-        self.assertEqual(vehicle.combustible, 'Gasolina')
-        self.assertEqual(vehicle.puertas, 5)
-        self.assertEqual(vehicle.anyo_inicio, 2016)
-        self.assertEqual(vehicle.anyo_fin, 2020)
-        self.assertEqual(vehicle.tipos_motor, 'TCE')
-        self.assertEqual(vehicle.potencia_hp, 90.5)
-        self.assertEqual(vehicle.potencia_kw, 67.2)
-        self.assertEqual(vehicle.cilindrada, 898)
-        self.assertEqual(vehicle.transmision, 'Manual')
-        self.assertEqual(vehicle.alimentacion, 'Inyección')
-        self.assertEqual(vehicle.num_marchas, 5)
-        self.assertEqual(vehicle.rv_code, 'RV123')
-        self.assertEqual(vehicle.ktype, 'KT456')
-        self.assertEqual(vehicle.urls_imgs, 'https://example.com/img1, https://example.com/img2')
-        self.assertTrue(vehicle.website_published)
-
-        # Verificar fecha de modificación
-        expected_date = datetime(2024, 1, 30, 15, 42, 33)
-        self.assertEqual(vehicle.fecha_mod, expected_date)
-
-    @patch('requests.get')
-    def test_piece_creation_complete(self, mock_get):
-        """Test creación completa de pieza con todos los datos"""
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Mock para la imagen usando el path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
-            # Ejecutar el wizard
-            result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Verificar que se creó la pieza
-        piece = self.env['product.template'].search([('default_code', '=', 'REF001')])
-        self.assertTrue(piece, "La pieza debería haberse creado")
-
-        # Verificar todos los campos de la pieza
-        self.assertEqual(piece.name, 'Faro delantero izquierdo')
-        self.assertEqual(piece.default_code, 'REF001')
-        self.assertEqual(piece.list_price, 157.50)  # 15750 centavos = 157.50 euros
-        self.assertEqual(piece.weight, 2.5)
-        self.assertEqual(piece.principal_ref, 'PRIN001')
-        self.assertEqual(piece.version_code, 'VER001')
-        self.assertEqual(piece.article_code, 'ART001')
-        self.assertEqual(piece.stock_year, '2024')
-        self.assertEqual(piece.location, 'Almacenada')
-        self.assertEqual(piece.observations, 'Pieza original')
-        self.assertEqual(piece.reserve, 'No')
-        self.assertEqual(piece.material_type, 'Revisado')
-        self.assertEqual(piece.cod_almacen, 'ALM001')
-        self.assertEqual(piece.modification_date, '2024-01-30 15:42:33')
-        self.assertTrue(piece.website_published)
-        self.assertTrue(piece.image_1920, "La pieza debería tener imagen")
-
-    @patch('requests.get')
-    def test_piece_vehicle_relationship(self, mock_get):
-        """Test relación entre pieza y vehículo"""
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
-            # Ejecutar el wizard
-            result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Verificar que se crearon ambos registros
-        vehicle = self.env['product.vehicle'].search([('id_local', '=', '12345')])
-        piece = self.env['product.template'].search([('default_code', '=', 'REF001')])
-
-        self.assertTrue(vehicle, "El vehículo debería existir")
-        self.assertTrue(piece, "La pieza debería existir")
-
-        # Verificar la relación
-        self.assertEqual(piece.product_vehicle_id.id, vehicle.id,
-                         "La pieza debería estar relacionada con el vehículo")
-
-    @patch('requests.get')
-    def test_category_creation(self, mock_get):
-        """Test creación de categorías"""
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
-            # Ejecutar el wizard
-            result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Verificar categoría interna
-        category = self.env['product.category'].search([('default_code', '=', 'FAR')])
-        self.assertTrue(category, "La categoría interna debería haberse creado")
-        self.assertEqual(category.name, 'Faros')
-
-        # Verificar categorías públicas
-        public_categ_vehiculos = self.env['product.public.category'].search([('name', '=', 'Vehículos')])
-        public_categ_faros = self.env['product.public.category'].search([('name', '=', 'Faros')])
-
-        self.assertTrue(public_categ_vehiculos, "La categoría pública 'Vehículos' debería existir")
-        self.assertTrue(public_categ_faros, "La categoría pública 'Faros' debería existir")
-        self.assertEqual(public_categ_faros.parent_id, public_categ_vehiculos)
-
-    @patch('requests.get')
-    def test_vehicle_update_existing(self, mock_get):
-        """Test actualización de vehículo existente"""
-        # Crear vehículo existente
-        existing_vehicle = self.env['product.vehicle'].create({
-            'name': 'Vehículo Anterior',
-            'id_local': '12345',
-            'id_empresa': 'OLD_EMP',  # Ahora campo Char
-            'estado': 'Inactivo'
-        })
-
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Ejecutar el wizard
-        result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Refrescar el vehículo correctamente
-        existing_vehicle.invalidate_cache()
-        existing_vehicle = self.env['product.vehicle'].browse(existing_vehicle.id)
-
-        # Verificar que se actualizó el vehículo existente
-        self.assertEqual(existing_vehicle.name, 'Renault Clio TCE 90')
-        self.assertEqual(existing_vehicle.estado, 'Activo')
-        self.assertEqual(existing_vehicle.id_empresa, 'EMP001')  # Campo Char
-
-        # Verificar que solo hay un vehículo con ese ID
-        vehicles = self.env['product.vehicle'].search([('id_local', '=', '12345')])
-        self.assertEqual(len(vehicles), 1, "Solo debería haber un vehículo con ese ID")
-
-    @patch('requests.get')
-    def test_piece_update_existing(self, mock_get):
-        """Test actualización de pieza existente"""
-        # Crear pieza existente
-        existing_piece = self.env['product.template'].create({
-            'name': 'Pieza Anterior',
-            'default_code': 'REF001',
-            'list_price': 100.0
-        })
-
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
-            # Ejecutar el wizard
-            result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Refrescar la pieza
-        existing_piece.invalidate_cache()
-        existing_piece = self.env['product.template'].browse(existing_piece.id)
-
-        # Verificar que se actualizó la pieza existente
-        self.assertEqual(existing_piece.name, 'Faro delantero izquierdo')
-        self.assertEqual(existing_piece.list_price, 157.50)
-
-        # Verificar que solo hay una pieza con ese código
-        pieces = self.env['product.template'].search([('default_code', '=', 'REF001')])
-        self.assertEqual(len(pieces), 1, "Solo debería haber una pieza con ese código")
-
-    @patch('requests.get')
-    def test_date_parsing_invalid_format(self, mock_get):
-        """Test manejo de fechas con formato inválido"""
-        # Datos con fecha inválida
-        invalid_data = self.mock_api_response.copy()
-        invalid_data['vehiculos'][0]['fechaMod'] = 'fecha_invalida'
-
-        mock_response = MagicMock()
-        mock_response.json.return_value = invalid_data
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Ejecutar el wizard
-        result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Verificar que el vehículo se creó sin fecha
-        vehicle = self.env['product.vehicle'].search([('id_local', '=', '12345')])
-        self.assertTrue(vehicle, "El vehículo debería haberse creado")
-        self.assertFalse(vehicle.fecha_mod, "La fecha debería estar vacía")
-
-    @patch('requests.get')
-    def test_api_request_error(self, mock_get):
-        """Test manejo de errores en la API"""
-        # Simular error de conexión
-        mock_get.side_effect = Exception("Error de conexión")
-
-        with self.assertRaises(UserError) as cm:
-            self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        self.assertIn("Error inesperado", str(cm.exception))
-
-    @patch('requests.get')
-    def test_statistics_generation(self, mock_get):
-        """Test generación de estadísticas"""
-        # Mock de la respuesta HTTP
-        mock_response = MagicMock()
-        mock_response.json.return_value = self.mock_api_response
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
-
-        # Mock para la imagen usando path absoluto
-        with patch(
-            'odoo.addons.metasync_api_connector.models.recover_changes_stock_company_metasync_wizard.RecoverChangesStockCompanyMetasyncWizard.fetch_image',
-            return_value=base64.b64encode(b'fake_image_data')
-        ):
-            # Ejecutar el wizard
-            result = self.wizard.recuperar_cambios_almacen_empresa_metasync()
-
-        # Verificar el resultado
-        self.assertEqual(result['type'], 'ir.actions.client')
-        self.assertEqual(result['tag'], 'display_notification')
-        self.assertEqual(result['params']['type'], 'success')
-
-        # Verificar que el mensaje contiene estadísticas
-        message = result['params']['message']
-        self.assertIn('Vehículos', message)
-        self.assertIn('Piezas', message)
-        self.assertIn('creados: 1', message)
-
-    def test_safe_conversion_functions(self):
-        """Test funciones de conversión segura"""
-        # Test datos del vehículo con valores problemáticos
-        problematic_data = {
-            'idLocal': 12345,
-            'kilometraje': '',
-            'anyoVehiculo': None,
-            'puertas': 'abc',
-            'potenciaHP': '90.5',
-            'potenciaKw': False,
-            'cilindrada': '898'
+        situacion_map = {
+            0: "En Proceso de Desmontaje",
+            1: "Almacenada",
+            2: "Con Incidencia",
+            3: "En Reparto",
+            4: "En Control de Calidad",
+            5: "Desechada",
+            6: "En Mostrador",
+            7: "Montada Revisada",
+            8: "Vendida",
+            9: "Situación Desconocida"
         }
 
-        vehicle_result, status = self.wizard._process_vehicle(problematic_data)
+        type_material_map = {
+            0: "Revisado",
+            1: "Nuevo",
+            2: "De segunda mano",
+            3: "Reparado",
+        }
 
-        # Verificar que se manejaron correctamente los valores problemáticos
-        self.assertEqual(vehicle_result.kilometraje, 0)
-        self.assertEqual(vehicle_result.anyo_vehiculo, 0)
-        self.assertEqual(vehicle_result.puertas, 0)
-        self.assertEqual(vehicle_result.potencia_hp, 90.5)
-        self.assertEqual(vehicle_result.potencia_kw, 0.0)
-        self.assertEqual(vehicle_result.cilindrada, 898)
-
-        # El vehículo debería crearse exitosamente
-        self.assertEqual(status, 'created')
-
-    def tearDown(self):
-        """Limpiar después de cada test"""
-        # Limpiar registros creados
         try:
-            self.env['product.vehicle'].search([('id_local', '=', '12345')]).unlink()
-            self.env['product.template'].search([('default_code', '=', 'REF001')]).unlink()
-            self.env['product.category'].search([('default_code', '=', 'FAR')]).unlink()
-            self.env['product.public.category'].search([('name', 'in', ['Vehículos', 'Faros'])]).unlink()
-        except Exception as e:
-            _logger.error("Error durante limpieza: %s", str(e))
-            self.env.cr.rollback()
+            response = requests.get(
+                'https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa',
+                headers=headers
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        super().tearDown()
+            # Contadores para estadísticas
+            stats = {
+                'vehicles': {
+                    'created': 0,
+                    'updated': 0,
+                    'skipped': 0,
+                    'error': 0
+                },
+                'pieces': {
+                    'created': 0,
+                    'updated': 0,
+                    'skipped': 0,
+                    'error': 0
+                }
+            }
+
+            # 1. Procesar todos los vehículos
+            vehicles_dict = {}
+            for vehiculo in data.get('vehiculos', []):
+                vehicle_result, status = self._process_vehicle(vehiculo)
+                if vehicle_result:
+                    vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
+                    stats['vehicles'][status] += 1
+                else:
+                    stats['vehicles']['skipped'] += 1
+
+            # 2. Procesar las piezas
+            for pieza in data.get('piezas', []):
+                status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
+                stats['pieces'][status] += 1
+
+            # 3. Mostrar resultados detallados
+            message = self._generate_results_message(stats)
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Proceso Completado',
+                    'message': message,
+                    'type': 'success',
+                    'sticky': True
+                }
+            }
+
+        except requests.exceptions.RequestException as e:
+            raise UserError(f"Error al realizar la solicitud: {e}")
+        except Exception as e:
+            raise UserError(f"Error inesperado: {e}")
+
+    def _process_vehicle(self, vehiculo_data):
+        """Procesa un vehículo y devuelve el registro y el estado"""
+        id_local = vehiculo_data.get('idLocal')
+        if not id_local:
+            print("Vehículo sin ID local, saltando...")
+            return None, 'skipped'
+
+        existing_vehicle = self.env['product.vehicle'].search([
+            ('id_local', '=', str(id_local))
+        ], limit=1)
+
+        # Convertir campos numéricos
+        def safe_int(val):
+            try:
+                return int(val) if val not in (None, '', False) else 0
+            except (ValueError, TypeError):
+                return 0
+
+        def safe_float(val):
+            try:
+                return float(val) if val not in (None, '', False) else 0.0
+            except (ValueError, TypeError):
+                return 0.0
+
+        # Construir nombre
+        nombre_marca = vehiculo_data.get('nombreMarca', '')
+        nombre_modelo = vehiculo_data.get('nombreModelo', '')
+        nombre_version = vehiculo_data.get('nombreVersion', '')
+        vehicle_name = f"{nombre_marca} {nombre_modelo} {nombre_version}".strip()
+        if not vehicle_name:
+            vehicle_name = f"Vehículo {id_local}"
+
+        # Preparar valores
+        vehicle_vals = {
+            'name': vehicle_name,
+            'id_local': str(id_local),
+            'id_empresa': str(vehiculo_data.get('idEmpresa', '')),
+            'codigo': vehiculo_data.get('codigo', ''),
+            'estado': vehiculo_data.get('estado', ''),
+            'bastidor': vehiculo_data.get('bastidor', ''),
+            'matricula': vehiculo_data.get('matricula', ''),
+            'color': vehiculo_data.get('color', ''),
+            'kilometraje': safe_int(vehiculo_data.get('kilometraje')),
+            'anyo_vehiculo': safe_int(vehiculo_data.get('anyoVehiculo')),
+            'codigo_motor': vehiculo_data.get('codigoMotor', ''),
+            'codigo_cambio': vehiculo_data.get('codigoCambio', ''),
+            'observaciones': vehiculo_data.get('observaciones', ''),
+            'cod_marca': vehiculo_data.get('codMarca', ''),
+            'nombre_marca': nombre_marca,
+            'cod_modelo': vehiculo_data.get('codModelo', ''),
+            'nombre_modelo': nombre_modelo,
+            'cod_version': vehiculo_data.get('codVersion', ''),
+            'nombre_version': nombre_version,
+            'tipo_version': vehiculo_data.get('tipoVersion', ''),
+            'combustible': vehiculo_data.get('combustible', ''),
+            'puertas': safe_int(vehiculo_data.get('puertas')),
+            'anyo_inicio': safe_int(vehiculo_data.get('anyoInicio')),
+            'anyo_fin': safe_int(vehiculo_data.get('anyoFin')),
+            'tipos_motor': vehiculo_data.get('tiposMotor', ''),
+            'potencia_hp': safe_float(vehiculo_data.get('potenciaHP')),
+            'potencia_kw': safe_float(vehiculo_data.get('potenciaKw')),
+            'cilindrada': safe_int(vehiculo_data.get('cilindrada')),
+            'transmision': vehiculo_data.get('transmision', ''),
+            'alimentacion': vehiculo_data.get('alimentacion', ''),
+            'num_marchas': safe_int(vehiculo_data.get('numMarchas')),
+            'rv_code': vehiculo_data.get('rvCode', ''),
+            'ktype': vehiculo_data.get('ktype', ''),
+            'urls_imgs': ', '.join(vehiculo_data.get('urlsImgs', [])),
+            'website_published': True,
+        }
+
+        # Manejar fecha de modificación
+        if 'fechaMod' in vehiculo_data:
+            fecha_str = vehiculo_data['fechaMod']
+
+            try:
+                # Parsear la fecha tal como viene de la API (formato ISO)
+                fecha_mod = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S')
+                vehicle_vals['fecha_mod'] = fecha_mod
+            except ValueError:
+                try:
+                    # Intentar con formato alternativo dd/mm/yyyy
+                    fecha_mod = datetime.strptime(fecha_str, '%d/%m/%Y %H:%M:%S')
+                    vehicle_vals['fecha_mod'] = fecha_mod
+                except (ValueError, TypeError) as e:
+                    print(f"Error convirtiendo fechaMod: {e}")
+                    print(f"Formato recibido: {fecha_str}")
+            else:
+                try:
+                    # Intentar con formato ISO (formato principal de la API)
+                    fecha_mod = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S')
+                    vehicle_vals['fecha_mod'] = fecha_mod
+                except ValueError:
+                    try:
+                        # Intentar con formato alternativo dd/mm/yyyy
+                        fecha_mod = datetime.strptime(fecha_str, '%d/%m/%Y %H:%M:%S')
+                        vehicle_vals['fecha_mod'] = fecha_mod
+                    except (ValueError, TypeError) as e:
+                        print(f"Error convirtiendo fechaMod: {e}")
+                        print(f"Formato recibido: {fecha_str}")
+
+        # Crear o actualizar vehículo
+        try:
+            if existing_vehicle:
+                print(f"Actualizando vehículo ID {id_local}")
+                existing_vehicle.write(vehicle_vals)
+                return existing_vehicle, 'updated'
+            else:
+                print(f"Creando nuevo vehículo ID {id_local}")
+                return self.env['product.vehicle'].create(vehicle_vals), 'created'
+        except Exception as e:
+            print(f"Error procesando vehículo {id_local}: {str(e)}")
+            return None, 'error'
+
+    def _process_piece(self, pieza, situacion_map, type_material_map, vehicles_dict):
+        """Procesa una pieza y devuelve el estado de la operación"""
+        try:
+            # Validar datos mínimos
+            ref_local = pieza.get('refLocal', '')
+            descripcion = pieza.get('descripcionArticulo', '')
+
+            if not ref_local or not descripcion:
+                print("Pieza sin referencia local o descripción, saltando...")
+                return 'skipped'
+
+            # Obtener imagen
+            image_data = None
+            if pieza.get('urlsImgs'):
+                first_image_url = pieza['urlsImgs'][0] + ".jpeg"
+                image_data = self.fetch_image(first_image_url)
+
+            # Mapear ubicación y tipo de material
+            ubicacion = pieza.get('ubicacion', 9)
+            ubicacion_texto = situacion_map.get(ubicacion, "Situación Desconocida")
+
+            tipo_material = pieza.get('tipoMaterial', 3)
+            tipo_material_texto = type_material_map.get(tipo_material, "Tipo Desconocido")
+
+            # Formatear fecha
+            date_str = pieza.get('fechaMod', '')
+            formatted_date = ''
+            if date_str:
+                try:
+                    date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
+                    formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    pass
+
+            # Buscar vehículo relacionado
+            vehicle_id = None
+            id_vehiculo = str(pieza.get('idVehiculo', ''))
+            if id_vehiculo and id_vehiculo != '0':
+                vehicle = vehicles_dict.get(id_vehiculo)
+                if vehicle:
+                    vehicle_id = vehicle.id
+                    print(f"Relacionando pieza con vehículo ID {id_vehiculo}")
+                else:
+                    print(f"Vehículo ID {id_vehiculo} no encontrado para pieza {ref_local}")
+
+            # Buscar o crear categoría
+            category = self._get_or_create_category(pieza)
+
+            # Buscar producto existente
+            product = self.env['product.template'].search([
+                ('default_code', '=', ref_local)
+            ], limit=1)
+
+            # Preparar valores
+            vals = {
+                'name': descripcion,
+                'default_code': ref_local,
+                'categ_id': category.id,
+                'list_price': (pieza.get('precio', 0) or 0) / 100,
+                'weight': pieza.get('peso', 0),
+                'image_1920': image_data,
+                'principal_ref': pieza.get('refPrincipal', ''),
+                'version_code': pieza.get('codVersion', ''),
+                'article_code': pieza.get('codArticulo', ''),
+                'stock_year': pieza.get('anyoStock', ''),
+                'location': ubicacion_texto,
+                'observations': pieza.get('observaciones', ''),
+                'reserve': pieza.get('reserva', ''),
+                'material_type': tipo_material_texto,
+                'modification_date': formatted_date,
+                'cod_almacen': pieza.get('codAlmacen', ''),
+                'website_published': True,
+                'product_vehicle_id': vehicle_id,  # Relación con el vehículo
+            }
+
+            if product:
+                print(f"Actualizando pieza {ref_local} - {descripcion}")
+                product.write(vals)
+                return 'updated'
+            else:
+                print(f"Creando pieza {ref_local} - {descripcion}")
+                # Crear categorías públicas
+                public_categ_ids = self._get_or_create_public_categories(pieza)
+                vals['public_categ_ids'] = [(6, 0, public_categ_ids)]
+                self.env['product.template'].create(vals)
+                return 'created'
+
+        except Exception as e:
+            print(f"Error procesando pieza {pieza.get('refLocal', 'N/A')}: {str(e)}")
+            return 'error'
+
+    def _get_or_create_category(self, pieza):
+        """Obtiene o crea la categoría de producto"""
+        cod_familia = pieza.get('codFamilia', '')
+        desc_familia = pieza.get('descripcionFamilia', '')
+
+        if not cod_familia or not desc_familia:
+            return self.env.ref('product.product_category_all')
+
+        category = self.env['product.category'].search([
+            ('default_code', '=', cod_familia)
+        ], limit=1)
+
+        if not category:
+            category = self.env['product.category'].create({
+                'name': desc_familia,
+                'default_code': cod_familia,
+                'parent_id': self.env.ref('product.product_category_1').id,
+            })
+            print(f"Categoría creada: {desc_familia}")
+
+        return category
+
+    def _get_or_create_public_categories(self, pieza):
+        """Obtiene o crea categorías públicas"""
+        # Categoría padre "Vehículos"
+        vehiculos_categ = self.env['product.public.category'].search([
+            ('name', '=', 'Vehículos')
+        ], limit=1)
+
+        if not vehiculos_categ:
+            vehiculos_categ = self.env['product.public.category'].create({
+                'name': 'Vehículos',
+                'sequence': 1
+            })
+
+        # Categoría específica
+        desc_familia = pieza.get('descripcionFamilia', '')
+        if not desc_familia:
+            return [vehiculos_categ.id]
+
+        familia_categ = self.env['product.public.category'].search([
+            ('name', '=', desc_familia)
+        ], limit=1)
+
+        if not familia_categ:
+            familia_categ = self.env['product.public.category'].create({
+                'name': desc_familia,
+                'parent_id': vehiculos_categ.id,
+                'sequence': 10
+            })
+
+        return [vehiculos_categ.id, familia_categ.id]
+
+    def _generate_results_message(self, stats):
+        """Genera el mensaje de resultados con estadísticas"""
+        # Estadísticas de vehículos
+        v_created = stats['vehicles']['created']
+        v_updated = stats['vehicles']['updated']
+        v_skipped = stats['vehicles']['skipped']
+        v_error = stats['vehicles']['error']
+        v_total = v_created + v_updated + v_skipped + v_error
+
+        # Estadísticas de piezas
+        p_created = stats['pieces']['created']
+        p_updated = stats['pieces']['updated']
+        p_skipped = stats['pieces']['skipped']
+        p_error = stats['pieces']['error']
+        p_total = p_created + p_updated + p_skipped + p_error
+
+        # Construir mensaje
+        message = f"""
+        Resumen del Procesamiento:
+
+           (1) Vehículos: Total procesados: {v_total}, creados: {v_created}, actualizados: {v_updated}, omitidos: {v_skipped} y errores: {v_error};
+           (2) Piezas: Total procesadas: {p_total}, creadas: {p_created}, actualizadas: {p_updated}, omitidas: {p_skipped} y errores: {p_error};
+           (3) Relaciones: Piezas relacionadas con vehículos: {p_created + p_updated - p_skipped}.
+        """
+
+        return message
+
+    @staticmethod
+    def fetch_image(url):
+        """Obtiene imagen desde URL"""
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return base64.b64encode(response.content)
+        except requests.exceptions.RequestException as e:
+            print(f"Error obteniendo imagen: {e}")
+            return None
