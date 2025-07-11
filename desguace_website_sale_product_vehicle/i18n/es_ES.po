@@ -1,0 +1,328 @@
+# Spanish (Spain) translations for desguace_website_sale_product_vehicle.
+# Copyright (C) 2024 Xtendoo
+# This file is distributed under the same license as the desguace_website_sale_product_vehicle package.
+# Xtendoo <info@xtendoo.es>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: desguace_website_sale_product_vehicle 18.0.1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-11 12:00+0000\n"
+"PO-Revision-Date: 2025-07-11 12:00+0000\n"
+"Last-Translator: Xtendoo <info@xtendoo.es>\n"
+"Language-Team: Spanish (Spain)\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__name
+msgid "Vehicle Name"
+msgstr "Nombre del Vehículo"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__description
+msgid "Description"
+msgstr "Descripción"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__product_template_id
+msgid "Product Template Reference"
+msgstr "Referencia de Plantilla de Producto"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__product_ids
+msgid "Products"
+msgstr "Productos"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__products_count
+msgid "Number of products"
+msgstr "Número de productos"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__product_image_ids
+msgid "Images"
+msgstr "Imágenes"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__website_ribbon_id
+msgid "Ribbon"
+msgstr "Etiqueta"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__id_local
+msgid "ID Local"
+msgstr "ID Local"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,help:desguace_website_sale_product_vehicle.field_product_vehicle__id_local
+msgid "Local ID for the vehicle, used for synchronization with Metasync."
+msgstr "ID local del vehículo, utilizado para la sincronización con Metasync."
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__id_empresa
+msgid "ID Empresa"
+msgstr "ID Empresa"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__fecha_mod
+msgid "Fecha Modificación"
+msgstr "Fecha de Modificación"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__codigo
+msgid "Código"
+msgstr "Código"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__estado
+msgid "Estado"
+msgstr "Estado"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__bastidor
+msgid "Bastidor"
+msgstr "Bastidor"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__matricula
+msgid "Matrícula"
+msgstr "Matrícula"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__color
+msgid "Color"
+msgstr "Color"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__kilometraje
+msgid "Kilometraje"
+msgstr "Kilometraje"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__anyo_vehiculo
+msgid "Año del vehículo"
+msgstr "Año del vehículo"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__codigo_motor
+msgid "Código Motor"
+msgstr "Código del Motor"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__codigo_cambio
+msgid "Código Cambio"
+msgstr "Código del Cambio"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__observaciones
+msgid "Observaciones"
+msgstr "Observaciones"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__cod_marca
+msgid "Código Marca"
+msgstr "Código de Marca"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__nombre_marca
+msgid "Nombre Marca"
+msgstr "Nombre de Marca"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__cod_modelo
+msgid "Código Modelo"
+msgstr "Código del Modelo"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__nombre_modelo
+msgid "Nombre Modelo"
+msgstr "Nombre del Modelo"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__cod_version
+msgid "Código Versión"
+msgstr "Código de Versión"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__nombre_version
+msgid "Nombre Versión"
+msgstr "Nombre de Versión"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__tipo_version
+msgid "Tipo Versión"
+msgstr "Tipo de Versión"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__combustible
+msgid "Combustible"
+msgstr "Combustible"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__puertas
+msgid "Puertas"
+msgstr "Puertas"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__anyo_inicio
+msgid "Año Inicio"
+msgstr "Año de Inicio"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__anyo_fin
+msgid "Año Fin"
+msgstr "Año de Fin"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__tipos_motor
+msgid "Tipos Motor"
+msgstr "Tipos de Motor"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__potencia_hp
+msgid "Potencia HP"
+msgstr "Potencia HP"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__potencia_kw
+msgid "Potencia KW"
+msgstr "Potencia KW"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__cilindrada
+msgid "Cilindrada"
+msgstr "Cilindrada"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__transmision
+msgid "Transmisión"
+msgstr "Transmisión"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__alimentacion
+msgid "Alimentación"
+msgstr "Alimentación"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__num_marchas
+msgid "Número de marchas"
+msgstr "Número de marchas"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__rv_code
+msgid "RV Code"
+msgstr "Código RV"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__ktype
+msgid "K Type"
+msgstr "Tipo K"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__urls_imgs
+msgid "URLs Imágenes"
+msgstr "URLs de Imágenes"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_vehicle__state
+msgid "State"
+msgstr "Estado"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,selection:desguace_website_sale_product_vehicle.field_product_vehicle__state
+msgid "Published"
+msgstr "Publicado"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,selection:desguace_website_sale_product_vehicle.field_product_vehicle__state
+msgid "Unpublished"
+msgstr "No publicado"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.model.fields,field_description:desguace_website_sale_product_vehicle.field_product_template__product_vehicle_id
+msgid "Vehicle"
+msgstr "Vehículo"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "Vehicles"
+msgstr "Vehículos"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "Search vehicles..."
+msgstr "Buscar vehículos..."
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "Search"
+msgstr "Buscar"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "No image"
+msgstr "Sin imagen"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "pieces"
+msgstr "piezas"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "Not found vehicles..."
+msgstr "No se han encontrado vehículos..."
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "Not found vehicles for the search:"
+msgstr "No se han encontrado vehículos para la búsqueda:"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_list_template
+msgid "Show all vehicles"
+msgstr "Mostrar todos los vehículos"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "Vehicle Detail"
+msgstr "Detalle del Vehículo"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "Home"
+msgstr "Inicio"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "available pieces"
+msgstr "piezas disponibles"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "Request information"
+msgstr "Solicitar información"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "Related Pieces"
+msgstr "Piezas Relacionadas"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "View"
+msgstr "Ver"
+
+#. module: desguace_website_sale_product_vehicle
+#: model_terms:ir.ui.view,arch_db:desguace_website_sale_product_vehicle.vehicle_detail_template
+msgid "No related parts available"
+msgstr "No hay piezas relacionadas disponibles"
+
+#. module: desguace_website_sale_product_vehicle
+#: model:ir.asset,name:desguace_website_sale_product_vehicle.assets_frontend
+msgid "Vehicle Frontend Assets"
+msgstr "Recursos Frontend de Vehículos"
