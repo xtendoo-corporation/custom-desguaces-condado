@@ -209,6 +209,9 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                         print(f"Error convirtiendo fechaMod: {e}")
                         print(f"Formato recibido: {fecha_str}")
 
+        print("Datos del vehículo a procesar:")
+        for key, value in vehicle_vals.items():
+            print(f"  {key}: {value}")
         # Crear o actualizar vehículo
         try:
             if existing_vehicle:
