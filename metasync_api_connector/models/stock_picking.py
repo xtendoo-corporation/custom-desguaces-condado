@@ -241,6 +241,13 @@ class StockPicking(models.Model):
                 print("Categoría 'Vehículos' creada")
             else:
                 print("Categoría 'Vehículos' ya existe")
+
+            # Categoría pública padre
+            public_parent = self.env['product.public.category'].search([('name', '=', 'Vehículos')], limit=1)
+            if not public_parent:
+                public_parent = self.env['product.public.category'].create(
+                    {'name': 'Vehículos', 'parent_id': False})
+
             if len(response.json()['piezas']) == 0:
                 print("No hay piezas")
             else:
@@ -291,6 +298,13 @@ class StockPicking(models.Model):
                                 'parent_id': 1,
                             })
                             print(f"Categoría {category.name} creada")
+                        public_family = self.env['product.public.category'].search(
+                            [('name', '=', pieza['descripcionFamilia'])], limit=1)
+                        if not public_family:
+                            public_family = self.env['product.public.category'].create({
+                                'name': pieza['descripcionFamilia'],
+                                'parent_id': public_parent.id
+                            })
                         # image_url = pieza['urlsImgs'][0] + ".jpeg"
                         # image_response = requests.get(image_url)
                         # if image_response.status_code == 200:
