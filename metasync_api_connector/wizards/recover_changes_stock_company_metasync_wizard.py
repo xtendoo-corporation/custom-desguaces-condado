@@ -78,6 +78,9 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             # 1. Procesar todos los vehículos
             vehicles_dict = {}
             for vehiculo in data.get('vehiculos', []):
+                print("Datos brutos del vehículo recibido:")
+                for k, v in vehiculo.items():
+                    print(f"  {k}: {v}")
                 vehicle_result, status = self._process_vehicle(vehiculo)
                 if vehicle_result:
                     vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
