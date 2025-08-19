@@ -326,7 +326,18 @@
                                     context="{'default_name': name}"
                                     add-label="Add Images"
                                     nolabel="1"/>
-                                <field name="image_ids" widget="x2_many_media_viewer" string="Vehicle Images"/>
+                                <field name="image_ids" mode="kanban" string="Vehicle Images">
+                                    <kanban>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div>
+                                                    <img t-att-src="record.url.value" alt="Vehicle Image"
+                                                         style="max-width:150px;"/>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
                             </group>
                         </page>
                     </notebook>
@@ -399,15 +410,14 @@
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_image">
-                                <t t-if="record.product_image_ids.raw_value.length > 0">
-                                    <img
-                                        t-att-src="'/web/image/product.image/' + record.product_image_ids.raw_value[0] + '/image_1920'"
-                                        alt="Vehicle Image" class="o_kanban_image"/>
+                                <t t-if="vehicle.image_ids">
+                                    <img class="card-img-top img-fluid vehicle_item_image"
+                                         t-att-src="vehicle.image_ids[0].url"
+                                         t-att-alt="vehicle.name"/>
                                 </t>
                                 <t t-else="">
                                     <div class="o_kanban_image_placeholder">
                                         <i class="fa fa-car fa-3x text-muted"/>
-                                        <strong>test</strong>
                                     </div>
                                 </t>
                             </div>
