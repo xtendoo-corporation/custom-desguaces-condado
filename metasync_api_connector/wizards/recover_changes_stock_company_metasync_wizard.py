@@ -14,6 +14,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
     offset = fields.Integer(string='Offset', required=True, default=10)
 
     def recuperar_cambios_almacen_empresa_metasync(self):
+        print("Iniciando recuperación de cambios en el almacén de la empresa Metasync... Wizard")
         self.ensure_one()
         api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey', default=None)
         if not api_key:
@@ -113,6 +114,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
     def _process_vehicle(self, vehiculo_data):
         """Procesa un vehículo y devuelve el registro y el estado"""
+        print("Procesa un vehículo y devuelve el registro y el estado Wizard:")
         id_local = vehiculo_data.get('idLocal')
         if not id_local:
             print("Vehículo sin ID local, saltando...")
@@ -230,6 +232,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
     def _process_piece(self, pieza, situacion_map, type_material_map, vehicles_dict):
         """Procesa una pieza y devuelve el estado de la operación"""
+        print("Procesa una pieza y devuelve el estado de la operación Wizard:")
         try:
             # Validar datos mínimos
             ref_local = pieza.get('refLocal', '')
