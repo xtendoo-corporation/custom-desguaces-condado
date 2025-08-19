@@ -16,6 +16,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
     def recuperar_cambios_almacen_empresa_metasync(self):
         print("Iniciando recuperación de cambios en el almacén de la empresa Metasync... Wizard")
         self.ensure_one()
+
         api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey', default=None)
         if not api_key:
             raise UserError("No está bien configurado el parámetro 'metasync.inventory.apikey' o no es correcto.")
@@ -25,11 +26,11 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             raise UserError("No está bien configurado el parámetro 'metasync.id_empresa' o no es correcto.")
 
         headers = {
-            'apiKey': api_key,
+            'apikey': api_key,  # ojo, minúscula para que coincida con Postman
             'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
-            'lastid': self.lastid,
+            'lastid': str(self.lastid),
             'offset': str(self.offset),
-            'idempresa': idempresa
+            'idempresa': str(idempresa)
         }
 
         situacion_map = {
@@ -52,33 +53,19 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             3: "Reparado",
         }
 
+        stats = {
+            'vehicles': {'created': 0, 'updated': 0, 'skipped': 0, 'error': 0},
+            'pieces': {'created': 0, 'updated': 0, 'skipped': 0, 'error': 0}
+        }
+
         try:
-            response = requests.get(
-                'https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa',
-                headers=headers
-            )
-            response.raise_for_status()
-            data = response.json()
+            # 1. Recuperar VEHÍCULOS
+            resp_veh = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal', headers=headers)
+            resp_veh.raise_for_status()
+            data_veh = resp_veh.json()
 
-            # Contadores para estadísticas
-            stats = {
-                'vehicles': {
-                    'created': 0,
-                    'updated': 0,
-                    'skipped': 0,
-                    'error': 0
-                },
-                'pieces': {
-                    'created': 0,
-                    'updated': 0,
-                    'skipped': 0,
-                    'error': 0
-                }
-            }
-
-            # 1. Procesar todos los vehículos
             vehicles_dict = {}
-            for vehiculo in data.get('vehiculos', []):
+            for vehiculo in data_veh.get('vehiculos', []):
                 print("Datos brutos del vehículo recibido:")
                 for k, v in vehiculo.items():
                     print(f"  {k}: {v}")
@@ -89,12 +76,17 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 else:
                     stats['vehicles']['skipped'] += 1
 
-            # 2. Procesar las piezas
-            for pieza in data.get('piezas', []):
+            # 2. Recuperar PIEZAS
+            resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa',
+                                       headers=headers)
+            resp_piezas.raise_for_status()
+            data_piezas = resp_piezas.json()
+
+            for pieza in data_piezas.get('piezas', []):
                 status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
                 stats['pieces'][status] += 1
 
-            # 3. Mostrar resultados detallados
+            # 3. Mostrar resultados
             message = self._generate_results_message(stats)
             return {
                 'type': 'ir.actions.client',
