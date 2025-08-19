@@ -164,6 +164,12 @@ class ProductVehicle(models.Model):
         string='URLs Imágenes'
     )
 
+    image_ids = fields.One2many(
+        'product.vehicle.image',
+        'vehicle_id',
+        string="Imágenes"
+    )
+
     state = fields.Selection(
         [
             ('published', 'Published'),

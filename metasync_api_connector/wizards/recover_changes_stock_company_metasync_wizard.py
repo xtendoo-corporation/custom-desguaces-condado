@@ -116,7 +116,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             ('id_local', '=', str(id_local))
         ], limit=1)
 
-        # Convertir campos numéricos
+        # Helpers seguros
         def safe_int(val):
             try:
                 return int(val) if val not in (None, '', False) else 0
@@ -137,7 +137,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
         if not vehicle_name:
             vehicle_name = f"Vehículo {id_local}"
 
-        # Preparar valores
+        # Valores básicos
         vehicle_vals = {
             'name': vehicle_name,
             'id_local': str(id_local),
@@ -172,44 +172,41 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             'num_marchas': safe_int(vehiculo_data.get('numMarchas')),
             'rv_code': vehiculo_data.get('rvCode', ''),
             'ktype': vehiculo_data.get('ktype', ''),
-            'urls_imgs': ', '.join(vehiculo_data.get('urlsImgs', [])),
             'website_published': True,
         }
 
         # Manejar fecha de modificación
-        if 'fechaMod' in vehiculo_data:
-            fecha_str = vehiculo_data['fechaMod']
-
-            try:
-                # Parsear la fecha tal como viene de la API (formato ISO)
-                fecha_mod = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S')
-                vehicle_vals['fecha_mod'] = fecha_mod
-            except ValueError:
+        fecha_str = vehiculo_data.get('fechaMod')
+        if fecha_str:
+            for fmt in ('%Y-%m-%dT%H:%M:%S', '%d/%m/%Y %H:%M:%S'):
                 try:
-                    # Intentar con formato alternativo dd/mm/yyyy
-                    fecha_mod = datetime.strptime(fecha_str, '%d/%m/%Y %H:%M:%S')
-                    vehicle_vals['fecha_mod'] = fecha_mod
-                except (ValueError, TypeError) as e:
-                    print(f"Error convirtiendo fechaMod: {e}")
-                    print(f"Formato recibido: {fecha_str}")
+                    vehicle_vals['fecha_mod'] = datetime.strptime(fecha_str, fmt)
+                    break
+                except Exception:
+                    continue
             else:
-                try:
-                    # Intentar con formato ISO (formato principal de la API)
-                    fecha_mod = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S')
-                    vehicle_vals['fecha_mod'] = fecha_mod
-                except ValueError:
-                    try:
-                        # Intentar con formato alternativo dd/mm/yyyy
-                        fecha_mod = datetime.strptime(fecha_str, '%d/%m/%Y %H:%M:%S')
-                        vehicle_vals['fecha_mod'] = fecha_mod
-                    except (ValueError, TypeError) as e:
-                        print(f"Error convirtiendo fechaMod: {e}")
-                        print(f"Formato recibido: {fecha_str}")
+                print(f"Error convirtiendo fechaMod: {fecha_str}")
 
+        # Procesar imágenes
+        urls_imgs = vehiculo_data.get('urlsImgs', [])
+        if existing_vehicle:
+            # Si actualizamos, primero limpiamos las antiguas
+            existing_vehicle.image_ids.unlink()
+        if urls_imgs:
+            image_vals = [
+                (0, 0, {
+                    'url': url,
+                    'sequence': i
+                }) for i, url in enumerate(urls_imgs, start=1)
+            ]
+            vehicle_vals['image_ids'] = image_vals
+
+        # Debug
         print("Datos del vehículo a procesar:")
         for key, value in vehicle_vals.items():
             print(f"  {key}: {value}")
-        # Crear o actualizar vehículo
+
+        # Crear o actualizar
         try:
             if existing_vehicle:
                 print(f"Actualizando vehículo ID {id_local}")

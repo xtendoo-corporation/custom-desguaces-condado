@@ -33,9 +33,9 @@
                                 <t t-foreach="vehicles" t-as="vehicle">
                                     <div class="card border-0 col-lg-3 col-md-6 mb-4 text-center vehicle_item">
                                         <a t-att-href="'/vehicle/%s' % vehicle.id">
-                                            <t t-if="vehicle.product_image_ids">
+                                            <t t-if="vehicle.image_ids">
                                                 <img class="card-img-top img-fluid vehicle_item_image"
-                                                     t-att-src="'/web/image/product.image/%s/image_1920' % vehicle.product_image_ids[0].id"
+                                                     t-att-src="vehicle.image_ids[0].url"
                                                      t-att-alt="vehicle.name"/>
                                             </t>
                                             <t t-else="">
@@ -95,11 +95,29 @@
                     <!-- Vehicle Information -->
                     <div class="row mt-4">
                         <div class="col-lg-6">
-                            <!-- Standard Odoo carousel -->
-                            <t t-call="website_sale.shop_product_carousel"/>
-                            <!-- Bottom indicators -->
-                            <t t-call="website_sale.carousel_product_indicators">
-                                <t t-set="indicators_div_class" t-value="'pt-2 overflow-hidden'"/>
+                            <t t-if="vehicle.image_ids">
+                                <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
+                                    <div class="carousel-inner">
+                                        <t t-foreach="vehicle.image_ids" t-as="img">
+                                            <div t-attf-class="carousel-item #{'active' if loop.index == 1 else ''}">
+                                                <img t-att-src="img.url" class="d-block w-100 img-fluid rounded shadow"
+                                                     t-att-alt="vehicle.name"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <a class="carousel-control-prev" href="#vehicleCarousel" role="button"
+                                       data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#vehicleCarousel" role="button"
+                                       data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    </a>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <img src="/web/static/src/img/placeholder.png"
+                                     class="d-block w-100 img-fluid rounded shadow" alt="No image"/>
                             </t>
                         </div>
 
@@ -202,7 +220,7 @@
     </record>
 
 
-<!-- This view is used to create and edit vehicle records -->
+    <!-- This view is used to create and edit vehicle records -->
     <record id="product_vehicle_form_view" model="ir.ui.view">
         <field name="name">product.vehicle.form</field>
         <field name="model">product.vehicle</field>
@@ -380,8 +398,9 @@
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_image">
                                 <t t-if="record.product_image_ids.raw_value.length > 0">
-                                    <img t-att-src="'/web/image/product.image/' + record.product_image_ids.raw_value[0] + '/image_1920'"
-                                         alt="Vehicle Image" class="o_kanban_image"/>
+                                    <img
+                                        t-att-src="'/web/image/product.image/' + record.product_image_ids.raw_value[0] + '/image_1920'"
+                                        alt="Vehicle Image" class="o_kanban_image"/>
                                 </t>
                                 <t t-else="">
                                     <div class="o_kanban_image_placeholder">
@@ -396,22 +415,33 @@
                                             <t t-esc="record.name.value"/>
                                         </strong>
                                         <t t-if="record.id_local.value">
-                                            <small class="text-muted">(ID: <t t-esc="record.id_local.value"/>)</small>
+                                            <small class="text-muted">(ID:<t t-esc="record.id_local.value"/>)
+                                            </small>
                                         </t>
                                     </div>
                                 </div>
                                 <div class="o_kanban_record_body">
                                     <t t-if="record.nombre_marca.value">
-                                        <div><strong>Brand:</strong> <t t-esc="record.nombre_marca.value"/></div>
+                                        <div>
+                                            <strong>Brand:</strong>
+                                            <t t-esc="record.nombre_marca.value"/>
+                                        </div>
                                     </t>
                                     <t t-if="record.nombre_modelo.value">
-                                        <div><strong>Model:</strong> <t t-esc="record.nombre_modelo.value"/></div>
+                                        <div>
+                                            <strong>Model:</strong>
+                                            <t t-esc="record.nombre_modelo.value"/>
+                                        </div>
                                     </t>
                                     <t t-if="record.anyo_vehiculo.value">
-                                        <div><strong>Year:</strong> <t t-esc="record.anyo_vehiculo.value"/></div>
+                                        <div>
+                                            <strong>Year:</strong>
+                                            <t t-esc="record.anyo_vehiculo.value"/>
+                                        </div>
                                     </t>
                                     <div class="badge badge-info">
-                                        <t t-esc="record.products_count.value"/> products
+                                        <t t-esc="record.products_count.value"/>
+                                        products
                                     </div>
                                 </div>
                             </div>
