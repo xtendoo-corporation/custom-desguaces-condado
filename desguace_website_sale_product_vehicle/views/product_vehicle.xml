@@ -98,9 +98,10 @@
                             <t t-if="vehicle.image_ids">
                                 <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
                                     <div class="carousel-inner">
-                                        <t t-foreach="vehicle.image_ids" t-as="img">
-                                            <div t-attf-class="carousel-item #{'active' if loop.index == 1 else ''}">
-                                                <img t-att-src="img.url" class="d-block w-100 img-fluid rounded shadow"
+                                        <t t-foreach="vehicle.image_ids" t-as="img" t-foreach-index="i">
+                                            <div t-att-class="'carousel-item %s' % ('active' if i == 0 else '')">
+                                                <img t-att-src="img.url"
+                                                     class="d-block w-100 img-fluid rounded shadow"
                                                      t-att-alt="vehicle.name"/>
                                             </div>
                                         </t>
