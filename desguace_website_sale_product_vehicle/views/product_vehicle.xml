@@ -410,7 +410,7 @@
                     <t t-name="card">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_image">
-                                <t t-if="record.image_ids.value and record.image_ids.value[0]">
+                                <t t-if="record.image_ids and record.image_ids.value and record.image_ids.value.length > 0">
                                     <img class="card-img-top img-fluid vehicle_item_image"
                                          t-att-src="record.image_ids.value[0].url"
                                          t-att-alt="record.name.value"/>
