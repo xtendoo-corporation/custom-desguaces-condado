@@ -329,10 +329,17 @@
                                 <field name="image_ids" mode="kanban" string="Vehicle Images">
                                     <kanban>
                                         <templates>
-                                            <t t-name="kanban-box">
+                                            <t t-name="card">
                                                 <div>
-                                                    <img t-att-src="record.url.value" alt="Vehicle Image"
-                                                         style="max-width:150px;"/>
+                                                    <t t-if="record.url and record.url.value">
+                                                        <img t-att-src="record.url.value" alt="Vehicle Image"
+                                                             style="max-width:150px;"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div class="o_kanban_image_placeholder">
+                                                            <i class="fa fa-image fa-2x text-muted"/>
+                                                        </div>
+                                                    </t>
                                                 </div>
                                             </t>
                                         </templates>
