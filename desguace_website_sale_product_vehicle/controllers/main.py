@@ -121,11 +121,12 @@ class WebsiteSale(WebsiteSale):
         if not vehicle.exists() or not vehicle.is_published:
             return request.redirect('/page/product_vehicles')
 
+        vehicle_images = [{'url': img.url} for img in vehicle.image_ids]
+
         values = {
             'vehicle': vehicle,
             'products': vehicle.product_ids,
-            # Variables needed for the carousel
-            'product_images': vehicle.product_image_ids,
+            'vehicle_images': vehicle_images,  # Usar image_ids
             'product_image_first': True,
             'ribbon': vehicle.website_ribbon_id,
             'text_color': False,
