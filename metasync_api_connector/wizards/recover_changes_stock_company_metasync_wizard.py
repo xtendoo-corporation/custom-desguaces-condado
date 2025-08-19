@@ -201,6 +201,8 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             ]
             vehicle_vals['image_ids'] = image_vals
 
+        vehicle_vals['urls_imgs'] = '\n'.join(urls_imgs) if urls_imgs else ''
+
         # Debug
         print("Datos del vehículo a procesar:")
         for key, value in vehicle_vals.items():

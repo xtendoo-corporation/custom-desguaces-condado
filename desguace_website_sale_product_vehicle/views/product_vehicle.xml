@@ -100,7 +100,7 @@
                                     <div class="carousel-inner">
                                         <t t-foreach="vehicle.image_ids" t-as="img" t-foreach-index="i">
                                             <div t-att-class="'carousel-item %s' % ('active' if i == 0 else '')">
-                                                <img t-att-src="img.url"
+                                                <img t-att-src="img.url" t-field="img.url"
                                                      class="d-block w-100 img-fluid rounded shadow"
                                                      t-att-alt="vehicle.name"/>
                                             </div>
