@@ -326,6 +326,7 @@
                                     context="{'default_name': name}"
                                     add-label="Add Images"
                                     nolabel="1"/>
+                                <field name="image_ids" widget="x2_many_media_viewer" string="Vehicle Images"/>
                             </group>
                         </page>
                     </notebook>
