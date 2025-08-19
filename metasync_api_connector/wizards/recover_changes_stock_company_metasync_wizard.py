@@ -137,6 +137,11 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
         if not vehicle_name:
             vehicle_name = f"Vehículo {id_local}"
 
+        image_data = None
+        if vehiculo_data.get('urlsImgs'):
+            first_image_url = vehiculo_data['urlsImgs'][0] + ".jpeg"
+            image_data = self.fetch_image(first_image_url)
+
         # Preparar valores
         vehicle_vals = {
             'name': vehicle_name,
@@ -172,7 +177,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             'num_marchas': safe_int(vehiculo_data.get('numMarchas')),
             'rv_code': vehiculo_data.get('rvCode', ''),
             'ktype': vehiculo_data.get('ktype', ''),
-            'urls_imgs': ', '.join(vehiculo_data.get('urlsImgs', [])),
+            'urls_imgs': image_data,
             'website_published': True,
         }
 
