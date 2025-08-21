@@ -179,17 +179,6 @@ class ProductVehicle(models.Model):
         store=False, string="State"
     )
 
-    all_images = fields.Many2many(
-        'product.vehicle.image',
-        compute='_compute_all_images',
-        string='All Images',
-        store=False
-    )
-
-    def _compute_all_images(self):
-        for record in self:
-            record.all_images = record.image_ids
-
     @api.depends("product_ids")
     def _compute_products_count(self):
         product_model = self.env["product.template"]
