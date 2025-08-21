@@ -164,6 +164,31 @@ class ProductVehicle(models.Model):
         string='URLs Imágenes'
     )
 
+    img_urls_list = fields.Json(
+        string='Lista de URLs Imágenes'
+    )
+
+    img_urls_list = fields.Json(
+        string='Lista de URLs Imágenes',
+        compute='_compute_img_urls_list',
+        store=True
+    )
+
+    @api.depends('urls_imgs')
+    def _compute_img_urls_list(self):
+        for record in self:
+            if record.urls_imgs:
+                record.img_urls_list = [u.strip() for u in record.urls_imgs.splitlines() if u.strip()]
+            else:
+                record.img_urls_list = []
+
+    def set_img_urls_list(self):
+        for record in self:
+            if record.urls_imgs:
+                record.img_urls_list = [u.strip() for u in record.urls_imgs.splitlines() if u.strip()]
+            else:
+                record.img_urls_list = []
+
     image_ids = fields.One2many(
         'product.vehicle.image',
         'vehicle_id',

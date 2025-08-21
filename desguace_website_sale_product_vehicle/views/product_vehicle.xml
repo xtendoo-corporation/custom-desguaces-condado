@@ -95,11 +95,10 @@
                     <!-- Vehicle Information -->
                     <div class="row mt-4">
                         <div class="col-lg-6">
-                            <t t-if="vehicle.urls_imgs">
-                                <t t-set="img_urls" t-value="[u for u in vehicle.urls_imgs.splitlines() if u.strip()]"/>
+                            <t t-if="vehicle.img_urls_list">
                                 <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
                                     <div class="carousel-inner">
-                                        <t t-foreach="img_urls" t-as="img_url" t-foreach-index="i">
+                                        <t t-foreach="vehicle.img_urls_list" t-as="img_url" t-foreach-index="i">
                                             <div t-att-class="'carousel-item %s' % ('active' if i == 0 else '')">
                                                 <img t-att-src="img_url"
                                                      class="d-block w-100 img-fluid rounded shadow"
@@ -333,6 +332,10 @@
 
                                 <group name="images_urls" string="Image URLs">
                                     <field name="urls_imgs" widget="text"/>
+                                </group>
+
+                                <group name="img_urls_list" string="Image URLs list json">
+                                    <field name="img_urls_list" widget="text"/>
                                 </group>
                             </group>
                         </page>
