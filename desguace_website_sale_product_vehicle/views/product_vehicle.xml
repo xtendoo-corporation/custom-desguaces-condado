@@ -317,17 +317,14 @@
 
                         <page name="images" string="Images">
                             <group name="product_template_images" string="Images of vehicle">
-                                <field
-                                    name="product_image_ids"
-                                    colspan="2"
-                                    widget="x2_many_media_viewer"
-                                    options="{'convert_to_webp': True}"
-                                    mode="kanban"
-                                    context="{'default_name': name}"
-                                    add-label="Add Images"
-                                    nolabel="1"/>
+                                <group string="All Vehicle Images">
+                                    <t t-foreach="record.all_images" t-as="img">
+                                        <img t-att-src="img.url"
+                                             style="width:100px; height:100px; margin:4px; object-fit:cover;"/>
+                                    </t>
+                                </group>
                                 <field name="image_ids" widget="many2many_kanban" options="{'no_create': True}"
-                                       string="Vehicle Images" >
+                                       string="Vehicle Images">
                                     <kanban>
                                         <templates>
                                             <t t-name="card">
