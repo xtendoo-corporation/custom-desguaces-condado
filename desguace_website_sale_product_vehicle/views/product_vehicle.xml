@@ -326,7 +326,7 @@
                                     context="{'default_name': name}"
                                     add-label="Add Images"
                                     nolabel="1"/>
-                                <field name="image_ids" mode="kanban" string="Vehicle Images">
+                                <field name="image_ids" widget="many2many_kanban" options="{'no_create': True}" string="Vehicle Images">
                                     <kanban>
                                         <templates>
                                             <t t-name="card">
@@ -413,6 +413,7 @@
                 <field name="products_count"/>
                 <field name="product_image_ids"/>
                 <field name="is_published"/>
+                <field name="image_ids"/>
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_card oe_kanban_global_click">
