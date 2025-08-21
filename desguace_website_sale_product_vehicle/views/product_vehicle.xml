@@ -326,17 +326,19 @@
                                     context="{'default_name': name}"
                                     add-label="Add Images"
                                     nolabel="1"/>
-                                <field name="image_ids" widget="many2many_kanban" options="{'no_create': True}" string="Vehicle Images">
+                                <field name="image_ids" widget="many2many_kanban" options="{'no_create': True}"
+                                       string="Vehicle Images">
                                     <kanban>
                                         <templates>
                                             <t t-name="card">
-                                                <div>
+                                                <div style="width: 160px; margin: auto;">
                                                     <t t-if="record.url and record.url.value">
                                                         <img t-att-src="record.url.value" alt="Vehicle Image"
-                                                             style="max-width:150px;"/>
+                                                             style="width:150px; height:150px; object-fit:cover; border-radius:8px;"/>
                                                     </t>
                                                     <t t-else="">
-                                                        <div class="o_kanban_image_placeholder">
+                                                        <div class="o_kanban_image_placeholder"
+                                                             style="width:150px; height:150px; display:flex; align-items:center; justify-content:center;">
                                                             <i class="fa fa-image fa-2x text-muted"/>
                                                         </div>
                                                     </t>
