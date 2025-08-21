@@ -96,8 +96,8 @@
                     <div class="row mt-4">
                         <div class="col-lg-6">
                             <t t-if="vehicle.urls_imgs">
-                                <t t-set="img_urls" t-value="vehicle.urls_imgs.split('\n')"/>
-                                <t t-if="img_urls|length > 1">
+                                <t t-set="img_urls" t-value="(vehicle.urls_imgs or '').split('\n')"/>
+                                <t t-if="img_urls and img_urls|length > 1">
                                     <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
                                         <div class="carousel-inner">
                                             <t t-foreach="img_urls" t-as="img_url" t-foreach-index="i">
@@ -118,7 +118,7 @@
                                         </a>
                                     </div>
                                 </t>
-                                <t t-else="">
+                                <t t-elif="img_urls">
                                     <img t-att-src="img_urls[0].strip()"
                                          class="d-block w-100 img-fluid rounded shadow"
                                          t-att-alt="vehicle.name"/>
