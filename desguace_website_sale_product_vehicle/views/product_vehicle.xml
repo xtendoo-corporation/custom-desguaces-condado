@@ -98,11 +98,13 @@
                             <t t-if="vehicle.urls_imgs">
                                 <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
                                     <div class="carousel-inner">
-                                        <div class="carousel-item active">
-                                            <img t-att-src="vehicle.urls_imgs.split()[0]"
-                                                 class="d-block w-100 img-fluid rounded shadow"
-                                                 t-att-alt="vehicle.name"/>
-                                        </div>
+                                        <t t-foreach="vehicle.urls_imgs.split()" t-as="img_url" t-foreach-index="i">
+                                            <div t-att-class="'carousel-item %s' % ('active' if i == 0 else '')">
+                                                <img t-att-src="img_url"
+                                                     class="d-block w-100 img-fluid rounded shadow"
+                                                     t-att-alt="vehicle.name"/>
+                                            </div>
+                                        </t>
                                     </div>
                                     <a class="carousel-control-prev" href="#vehicleCarousel" role="button"
                                        data-bs-slide="prev">
