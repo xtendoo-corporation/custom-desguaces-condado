@@ -327,7 +327,7 @@
                                     add-label="Add Images"
                                     nolabel="1"/>
                                 <field name="image_ids" widget="many2many_kanban" options="{'no_create': True}"
-                                       string="Vehicle Images">
+                                       string="Vehicle Images" >
                                     <kanban>
                                         <templates>
                                             <t t-name="card">
