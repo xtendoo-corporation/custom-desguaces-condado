@@ -164,11 +164,12 @@ class ProductVehicle(models.Model):
         string='URLs Imágenes'
     )
 
+    # python
     def get_clean_img_urls(self):
         self.ensure_one()
         if not self.urls_imgs:
             return []
-        return [u.strip() for u in self.urls_imgs.split('\n') if u.strip()]
+        return [u.strip() for u in self.urls_imgs.split('\n') if u.strip() and u.strip() is not None]
 
     image_ids = fields.One2many(
         'product.vehicle.image',
