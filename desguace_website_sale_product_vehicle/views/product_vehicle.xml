@@ -98,7 +98,8 @@
                             <t t-if="vehicle.urls_imgs">
                                 <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
                                     <div class="carousel-inner">
-                                        <t t-foreach="vehicle.urls_imgs.split()" t-as="img_url" t-foreach-index="i">
+                                        <t t-foreach="vehicle.urls_imgs.splitlines()" t-as="img_url"
+                                           t-foreach-index="i">
                                             <div t-att-class="'carousel-item %s' % ('active' if i == 0 else '')">
                                                 <img t-att-src="img_url"
                                                      class="d-block w-100 img-fluid rounded shadow"
