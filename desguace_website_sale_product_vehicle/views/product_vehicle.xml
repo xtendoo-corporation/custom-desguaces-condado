@@ -97,7 +97,7 @@
                         <div class="col-lg-6">
                             <t t-if="vehicle.urls_imgs">
                                 <t t-set="img_urls"
-                                   t-value="vehicle.urls_imgs.split('\n') | map('strip') | reject('!')"/>
+                                   t-value="map('strip', vehicle.urls_imgs.split('\n')) | reject('!')"/>
                                 <t t-if="img_urls and img_urls|length > 1">
                                     <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
                                         <div class="carousel-inner">
