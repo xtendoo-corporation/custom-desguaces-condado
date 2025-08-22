@@ -174,7 +174,9 @@ class ProductVehicle(models.Model):
     def _compute_img_urls_list(self):
         for record in self:
             if record.urls_imgs:
-                urls = [u.strip() for u in record.urls_imgs.split(',') if u.strip()]
+                # Unificar saltos de línea y comas como separadores
+                raw_urls = record.urls_imgs.replace('\r', '').replace('\n', ',')
+                urls = [u.strip() for u in raw_urls.split(',') if u.strip()]
                 record.img_urls_list = urls
             else:
                 record.img_urls_list = []

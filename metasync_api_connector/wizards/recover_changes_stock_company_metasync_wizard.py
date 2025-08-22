@@ -219,12 +219,10 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             if existing_vehicle:
                 print(f"Actualizando vehículo ID {id_local}")
                 existing_vehicle.write(vehicle_vals)
-                existing_vehicle.refresh()
                 return existing_vehicle, 'updated'
             else:
                 print(f"Creando nuevo vehículo ID {id_local}")
                 new_vehicle = self.env['product.vehicle'].create(vehicle_vals)
-                new_vehicle.refresh()
                 return new_vehicle, 'created'
         except Exception as e:
             print(f"Error procesando vehículo {id_local}: {str(e)}")
