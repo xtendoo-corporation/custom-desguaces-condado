@@ -176,10 +176,9 @@ class ProductVehicle(models.Model):
 
     @api.depends('urls_imgs')
     def _compute_img_urls_list(self):
-        url_pattern = re.compile(r'https?://[^\s]+')
         for record in self:
             if record.urls_imgs:
-                urls = url_pattern.findall(record.urls_imgs.replace('\n', ' '))
+                urls = [u.strip() for u in record.urls_imgs.split(',') if u.strip()]
                 record.img_urls_list = urls
             else:
                 record.img_urls_list = []
