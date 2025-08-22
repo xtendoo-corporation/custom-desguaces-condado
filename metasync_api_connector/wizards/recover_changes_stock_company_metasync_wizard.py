@@ -65,16 +65,22 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             data_veh = resp_veh.json()
 
             vehicles_dict = {}
+            # Solo procesar vehículos con estado "EnCampa"
             for vehiculo in data_veh.get('vehiculos', []):
-                print("Datos brutos del vehículo recibido:")
-                for k, v in vehiculo.items():
-                    print(f"  {k}: {v}")
-                vehicle_result, status = self._process_vehicle(vehiculo)
-                if vehicle_result:
-                    vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
-                    stats['vehicles'][status] += 1
+                estados = vehiculo.get('estado', [])
+                # Si estado es lista y contiene el valor de "EnCampa"
+                if isinstance(estados, list) and 4 in estados:
+                    print("Datos brutos del vehículo recibido:")
+                    for k, v in vehiculo.items():
+                        print(f"  {k}: {v}")
+                    vehicle_result, status = self._process_vehicle(vehiculo)
+                    if vehicle_result:
+                        vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
+                        stats['vehicles'][status] += 1
+                    else:
+                        stats['vehicles']['skipped'] += 1
                 else:
-                    stats['vehicles']['skipped'] += 1
+                    print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
 
             # 2. Recuperar PIEZAS
             resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa',
