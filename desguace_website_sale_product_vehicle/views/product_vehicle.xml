@@ -97,7 +97,7 @@
                         <div class="col-lg-6">
                             <t t-if="vehicle.img_urls_list">
                                 <div t-if="vehicle.img_urls_list">
-                                    <div class="mb-3" style="width:100%; height:100%;">
+                                    <div class="mb-3">
                                         <!-- Imagen grande seleccionada -->
                                         <img id="mainImage"
                                              t-att-src="vehicle.img_urls_list[0]"
@@ -436,10 +436,10 @@
                     <t t-name="card">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_image">
-                                <t t-if="record.image_ids and record.image_ids.value and record.image_ids.value.length > 0">
+                                <t t-if="record.img_urls_list and record.img_urls_list.length > 0">
                                     <img class="card-img-top img-fluid vehicle_item_image"
-                                         t-att-src="record.image_ids.value[0].url"
-                                         t-att-alt="record.name.value"/>
+                                         t-att-src="record.img_urls_list[0]"
+                                         t-att-alt="record.name"/>
                                 </t>
                                 <t t-else="">
                                     <div class="o_kanban_image_placeholder">
@@ -454,7 +454,7 @@
                                             <t t-esc="record.name.value"/>
                                         </strong>
                                         <t t-if="record.id_local.value">
-                                            <small class="text-muted">(ID:<t t-esc="record.id_local.value"/>)
+                                            <small class="text-muted">(ID: <t t-esc="record.id_local.value"/>)
                                             </small>
                                         </t>
                                     </div>
@@ -462,19 +462,19 @@
                                 <div class="o_kanban_record_body">
                                     <t t-if="record.nombre_marca.value">
                                         <div>
-                                            <strong>Brand:</strong>
+                                            <strong>Brand: </strong>
                                             <t t-esc="record.nombre_marca.value"/>
                                         </div>
                                     </t>
                                     <t t-if="record.nombre_modelo.value">
                                         <div>
-                                            <strong>Model:</strong>
+                                            <strong>Model: </strong>
                                             <t t-esc="record.nombre_modelo.value"/>
                                         </div>
                                     </t>
                                     <t t-if="record.anyo_vehiculo.value">
                                         <div>
-                                            <strong>Year:</strong>
+                                            <strong>Year: </strong>
                                             <t t-esc="record.anyo_vehiculo.value"/>
                                         </div>
                                     </t>

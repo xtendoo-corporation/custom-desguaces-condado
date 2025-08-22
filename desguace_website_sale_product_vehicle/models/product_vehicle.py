@@ -165,10 +165,6 @@ class ProductVehicle(models.Model):
     )
 
     img_urls_list = fields.Json(
-        string='Lista de URLs Imágenes'
-    )
-
-    img_urls_list = fields.Json(
         string='Lista de URLs Imágenes',
         compute='_compute_img_urls_list',
         store=True
