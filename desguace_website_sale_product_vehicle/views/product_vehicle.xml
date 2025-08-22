@@ -96,24 +96,24 @@
                     <div class="row mt-4">
                         <div class="col-lg-6">
                             <t t-if="vehicle.img_urls_list">
-                                <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
-                                    <div class="carousel-inner">
+                                <div t-if="vehicle.img_urls_list">
+                                    <div class="mb-3">
+                                        <!-- Imagen grande seleccionada -->
+                                        <img id="mainImage"
+                                             t-att-src="vehicle.img_urls_list[0]"
+                                             class="d-block w-100 img-fluid rounded shadow"
+                                             t-att-alt="vehicle.name"
+                                             style="max-height:400px; object-fit:contain;"/>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
                                         <t t-foreach="vehicle.img_urls_list" t-as="img_url" t-foreach-index="i">
-                                            <div t-att-class="'carousel-item %s' % ('active' if i == 0 else '')">
-                                                <img t-att-src="img_url"
-                                                     class="d-block w-100 img-fluid rounded shadow"
-                                                     t-att-alt="vehicle.name"/>
-                                            </div>
+                                            <img t-att-src="img_url"
+                                                 class="img-thumbnail"
+                                                 style="width:80px; height:80px; object-fit:cover; cursor:pointer;"
+                                                 t-att-data-index="i"
+                                                 onclick="document.getElementById('mainImage').src=this.src"/>
                                         </t>
                                     </div>
-                                    <a class="carousel-control-prev" href="#vehicleCarousel" role="button"
-                                       data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    </a>
-                                    <a class="carousel-control-next" href="#vehicleCarousel" role="button"
-                                       data-bs-slide="next">
-                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    </a>
                                 </div>
                             </t>
                             <t t-elif="vehicle.image_ids">
