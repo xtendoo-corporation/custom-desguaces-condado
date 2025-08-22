@@ -97,7 +97,7 @@
                         <div class="col-lg-6">
                             <t t-if="vehicle.img_urls_list">
                                 <div t-if="vehicle.img_urls_list">
-                                    <div class="mb-3">
+                                    <div class="mb-3" style="width:100%; height:100%;">
                                         <!-- Imagen grande seleccionada -->
                                         <img id="mainImage"
                                              t-att-src="vehicle.img_urls_list[0]"
