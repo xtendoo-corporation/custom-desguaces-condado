@@ -83,7 +83,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
 
             # 2. Recuperar PIEZAS
-            resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa',
+            resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanal',
                                        headers=headers)
             resp_piezas.raise_for_status()
             data_piezas = resp_piezas.json()
