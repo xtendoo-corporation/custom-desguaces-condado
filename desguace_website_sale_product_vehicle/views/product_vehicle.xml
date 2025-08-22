@@ -336,16 +336,6 @@
 
                                 <group name="img_urls_list" string="Image URLs list json">
                                     <field name="img_urls_list" widget="text"/>
-                                    <t t-if="record.img_urls_list.value and record.img_urls_list.value.length > 0">
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <t t-foreach="record.img_urls_list.value" t-as="img_url">
-                                                <img t-att-src="img_url"
-                                                     class="img-thumbnail"
-                                                     style="width:80px; height:80px; object-fit:cover; margin:4px;"
-                                                     alt="Imagen de vehículo"/>
-                                            </t>
-                                        </div>
-                                    </t>
                                 </group>
                             </group>
                         </page>
