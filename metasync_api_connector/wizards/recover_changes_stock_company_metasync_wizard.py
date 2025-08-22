@@ -306,7 +306,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 'modification_date': formatted_date,
                 'cod_almacen': pieza.get('codAlmacen', ''),
                 'website_published': True,
-                'product_vehicle_id': vehicle_id,  # Relación con el vehículo
+                'product_vehicle_id': id_vehiculo,  # Relación con el vehículo
             }
 
             if product:
