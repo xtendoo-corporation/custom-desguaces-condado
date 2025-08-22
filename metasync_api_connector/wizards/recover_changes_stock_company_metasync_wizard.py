@@ -266,6 +266,9 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             # Buscar vehículo relacionado
             print("Buscando vehículo relacionado para la pieza...")
             print(f"ID Vehículo en pieza: {pieza.get('idVehiculo')}")
+            print("Datos completos de la pieza recibida:")
+            for k, v in pieza.items():
+                print(f"  {k}: {v}")
             vehicle_id = None
             id_vehiculo = str(pieza.get('idVehiculo', ''))
             if id_vehiculo and id_vehiculo != '0':
