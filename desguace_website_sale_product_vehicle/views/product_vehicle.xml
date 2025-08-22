@@ -336,6 +336,16 @@
 
                                 <group name="img_urls_list" string="Image URLs list json">
                                     <field name="img_urls_list" widget="text"/>
+                                    <t t-if="record.img_urls_list.value and record.img_urls_list.value.length > 0">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <t t-foreach="record.img_urls_list.value" t-as="img_url">
+                                                <img t-att-src="img_url"
+                                                     class="img-thumbnail"
+                                                     style="width:80px; height:80px; object-fit:cover; margin:4px;"
+                                                     alt="Imagen de vehículo"/>
+                                            </t>
+                                        </div>
+                                    </t>
                                 </group>
                             </group>
                         </page>
@@ -436,10 +446,10 @@
                     <t t-name="card">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_image">
-                                <t t-if="record.img_urls_list and record.img_urls_list.length > 0">
+                                <t t-if="record.img_urls_list.value and record.img_urls_list.value.length > 0">
                                     <img class="card-img-top img-fluid vehicle_item_image"
-                                         t-att-src="record.img_urls_list[0]"
-                                         t-att-alt="record.name"/>
+                                         t-att-src="record.img_urls_list.value[0]"
+                                         t-att-alt="record.name.value"/>
                                 </t>
                                 <t t-else="">
                                     <div class="o_kanban_image_placeholder">
@@ -454,7 +464,7 @@
                                             <t t-esc="record.name.value"/>
                                         </strong>
                                         <t t-if="record.id_local.value">
-                                            <small class="text-muted">(ID: <t t-esc="record.id_local.value"/>)
+                                            <small class="text-muted">(ID:<t t-esc="record.id_local.value"/>)
                                             </small>
                                         </t>
                                     </div>
@@ -462,19 +472,19 @@
                                 <div class="o_kanban_record_body">
                                     <t t-if="record.nombre_marca.value">
                                         <div>
-                                            <strong>Brand: </strong>
+                                            <strong>Brand:</strong>
                                             <t t-esc="record.nombre_marca.value"/>
                                         </div>
                                     </t>
                                     <t t-if="record.nombre_modelo.value">
                                         <div>
-                                            <strong>Model: </strong>
+                                            <strong>Model:</strong>
                                             <t t-esc="record.nombre_modelo.value"/>
                                         </div>
                                     </t>
                                     <t t-if="record.anyo_vehiculo.value">
                                         <div>
-                                            <strong>Year: </strong>
+                                            <strong>Year:</strong>
                                             <t t-esc="record.anyo_vehiculo.value"/>
                                         </div>
                                     </t>
