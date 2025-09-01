@@ -28,16 +28,19 @@
                             </group>
                         </group>
                     </page>
-                     <page name="images" string="Imágenes adicionales">
+                    <page name="images" string="Imágenes adicionales">
                         <field name="product_image_ids" mode="kanban" context="{'default_name': name}">
                             <kanban>
                                 <field name="name"/>
                                 <field name="image_1920"/>
                                 <templates>
-                                    <t t-name="kanban-box">
+                                    <t t-name="card">
                                         <div class="oe_kanban_global_click">
                                             <div class="o_kanban_image">
-                                                <img t-att-src="'data:image/png;base64,'+image_1920" alt="Imagen de producto"/>
+                                                <img t-if="record.image_1920.value"
+                                                     t-att-src="'data:image/png;base64,'+record.image_1920.value"
+                                                     alt="Imagen de producto"/>
+                                                <img t-else="" src="/web/static/img/placeholder.png" alt="Sin imagen"/>
                                             </div>
                                             <div class="oe_kanban_details">
                                                 <field name="name"/>
