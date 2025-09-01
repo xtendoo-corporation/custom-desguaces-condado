@@ -1,17 +1,20 @@
 <odoo>
     <template id="product_images_gallery" inherit_id="website_sale.product" name="Product Images Gallery">
-        <!-- Añadir después de la descripción del producto -->
         <xpath expr="//div[@id='product_details']" position="after">
-            <div t-if="product_images and len(product_images) > 0" class="mt-4">
+            <section class="container mt-4">
                 <h4>Imágenes adicionales</h4>
-                <div class="row">
-                    <t t-foreach="product_images" t-as="img">
+                <div t-if="product and product.product_image_ids" class="row">
+                    <t t-foreach="product.product_image_ids" t-as="img">
                         <div class="col-6 col-md-3 mb-3">
-                            <field t-field="img.image_1920" widget="image" class="img img-fluid"/>
+                            <img t-att-src="'/web/image/product.image/%s/image_1920' % img.id"
+                                 class="img img-fluid" t-att-alt="img.name"/>
                         </div>
                     </t>
                 </div>
-            </div>
+                <div t-else="" class="alert alert-info">
+                    No hay imágenes adicionales para este producto.
+                </div>
+            </section>
         </xpath>
     </template>
 </odoo>
