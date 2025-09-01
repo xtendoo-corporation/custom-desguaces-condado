@@ -133,3 +133,10 @@ class WebsiteSale(WebsiteSale):
             'bg_color': False,
         }
         return request.render("desguace_website_sale_product_vehicle.vehicle_detail_template", values)
+
+    @http.route(['/shop/product/<model("product.template"):product>'], type='http', auth="public", website=True)
+    def product(self, product, category='', search='', **kwargs):
+        result = super().product(product, category, search, **kwargs)
+        if product:
+            result.qcontext['product_images'] = product.product_image_ids
+        return result

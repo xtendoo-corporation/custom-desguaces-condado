@@ -17,6 +17,7 @@
         "security/ir.model.access.csv",
         "data/website_menu.xml",
         "views/product_vehicle.xml",
+        "views/product_piece.xml",
     ],
     "assets": {
         "web.assets_frontend": [
