@@ -242,9 +242,21 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
             # Obtener imagen
             image_data = None
+            product_image_vals = []
+
             if pieza.get('urlsImgs'):
                 first_image_url = pieza['urlsImgs'][0] + ".jpeg"
                 image_data = self.fetch_image(first_image_url)
+
+                for i, url in enumerate(pieza.get('urlsImgs', [])):
+                    img_url = url + ".jpeg"
+                    img_data = self.fetch_image(img_url)
+                    if img_data:
+                        product_image_vals.append((0, 0, {
+                            'name': f"{ref_local}_{i + 1}",
+                            'image_1920': img_data,
+                            'sequence': i + 1,
+                        }))
 
             # Mapear ubicación y tipo de material
             ubicacion = pieza.get('ubicacion', 9)
@@ -295,6 +307,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 'list_price': (pieza.get('precio', 0) or 0) / 100,
                 'weight': pieza.get('peso', 0),
                 'image_1920': image_data,
+                'product_image_ids': product_image_vals,  # Todas las imágenes para la galería
                 'principal_ref': pieza.get('refPrincipal', ''),
                 'version_code': pieza.get('codVersion', ''),
                 'article_code': pieza.get('codArticulo', ''),
@@ -312,6 +325,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
             if product:
                 print(f"Actualizando pieza {ref_local} - {descripcion}")
+                product.product_image_ids.unlink()
                 product.write(vals)
                 return 'updated'
             else:

@@ -43,4 +43,8 @@ class ProductTemplate(models.Model):
         string='¿Es Vehículo?',
         default=False,
     )
-
+    product_image_ids = fields.One2many(
+        'product.image.custom',
+        'product_tmpl_id',
+        string="Imágenes adicionales"
+    )
