@@ -36,7 +36,7 @@
                                 <templates>
                                     <t t-name="card">
                                         <div class="oe_kanban_card oe_kanban_global_click p-2"
-                                             style="width: auto; max-width: 200px;">
+                                             style="width: auto; max-width: 300px;">
                                             <div class="o_kanban_image_wrapper"
                                                  style="width: auto; display: inline-block;">
                                                 <field name="image_1920" widget="image"

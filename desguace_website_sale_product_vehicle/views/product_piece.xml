@@ -6,8 +6,9 @@
                 <div t-if="product and product.product_image_ids" class="row">
                     <t t-foreach="product.product_image_ids" t-as="img">
                         <div class="col-6 col-md-3 mb-3">
-                            <img t-att-src="'/web/image/product.image/%s/image_1920' % img.id"
-                                 class="img img-fluid" t-att-alt="img.name"/>
+                            <img t-att-src="'/web/image/' + 'product.image.custom' + '/' + str(img.id) + '/image_1920'"
+     class="img img-fluid" t-att-alt="img.name"/>
+
                         </div>
                     </t>
                 </div>
