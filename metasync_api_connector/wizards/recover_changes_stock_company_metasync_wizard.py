@@ -10,8 +10,12 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
     _description = 'Recuperar Cambios Stock Company Metasync'
 
     fecha = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
-    lastid_vehicles = fields.Char(string='Last ID Vehículos', required=True, default="0")
-    lastid_pieces = fields.Char(string='Last ID Piezas', required=True, default="0")
+    lastid_vehicles = fields.Char(string='Last ID Vehículos', required=True,
+                                  default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
+                                      'metasync.lastid_vehicles', '0'))
+    lastid_pieces = fields.Char(string='Last ID Piezas', required=True,
+                                default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
+                                    'metasync.lastid_pieces', '0'))
     offset = fields.Integer(string='Offset', required=True, default=10)
 
     def recuperar_cambios_almacen_empresa_metasync(self):
@@ -125,6 +129,10 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 'lastid_vehicles': nuevo_lastid_vehicles,
                 'lastid_pieces': nuevo_lastid_pieces,
             })
+
+            # Guardar los valores permanentemente en parámetros del sistema
+            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid_vehicles', nuevo_lastid_vehicles)
+            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid_pieces', nuevo_lastid_pieces)
 
             # Crear un nuevo wizard con los valores actualizados para la próxima ejecución
             self.env['recover.changes.stock.company.metasync.wizard'].create({
