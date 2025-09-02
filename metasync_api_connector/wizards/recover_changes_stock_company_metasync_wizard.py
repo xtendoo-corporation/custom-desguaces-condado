@@ -10,7 +10,8 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
     _description = 'Recuperar Cambios Stock Company Metasync'
 
     fecha = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
-    lastid = fields.Char(string='Last ID', required=True, default="0")
+    lastid_vehicles = fields.Char(string='Last ID Vehículos', required=True, default="0")
+    lastid_pieces = fields.Char(string='Last ID Piezas', required=True, default="0")
     offset = fields.Integer(string='Offset', required=True, default=10)
 
     def recuperar_cambios_almacen_empresa_metasync(self):
@@ -25,50 +26,38 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
         if not idempresa:
             raise UserError("No está bien configurado el parámetro 'metasync.id_empresa' o no es correcto.")
 
-        headers = {
-            'apikey': api_key,  # ojo, minúscula para que coincida con Postman
-            'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
-            'lastid': str(self.lastid),
-            'offset': str(self.offset),
-            'idempresa': str(idempresa)
-        }
-
-        situacion_map = {
-            0: "En Proceso de Desmontaje",
-            1: "Almacenada",
-            2: "Con Incidencia",
-            3: "En Reparto",
-            4: "En Control de Calidad",
-            5: "Desechada",
-            6: "En Mostrador",
-            7: "Montada Revisada",
-            8: "Vendida",
-            9: "Situación Desconocida"
-        }
-
-        type_material_map = {
-            0: "Revisado",
-            1: "Nuevo",
-            2: "De segunda mano",
-            3: "Reparado",
-        }
-
         stats = {
             'vehicles': {'created': 0, 'updated': 0, 'skipped': 0, 'error': 0},
             'pieces': {'created': 0, 'updated': 0, 'skipped': 0, 'error': 0}
         }
 
+        vehicles_dict = {}
+        nuevo_lastid_vehicles = self.lastid_vehicles
+        nuevo_lastid_pieces = self.lastid_pieces
+
         try:
             # 1. Recuperar VEHÍCULOS
-            resp_veh = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal', headers=headers)
+            headers_vehicles = {
+                'apikey': api_key,
+                'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
+                'lastid': str(self.lastid_vehicles),
+                'offset': str(self.offset),
+                'idempresa': str(idempresa)
+            }
+
+            resp_veh = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal',
+                                    headers=headers_vehicles)
             resp_veh.raise_for_status()
             data_veh = resp_veh.json()
 
-            vehicles_dict = {}
+            # Actualizar lastid de vehículos si está presente
+            if 'result_set' in data_veh and 'lastId' in data_veh['result_set']:
+                nuevo_lastid_vehicles = str(data_veh['result_set']['lastId'])
+                print(f"Nuevo lastid para vehículos: {nuevo_lastid_vehicles}")
+
             # Solo procesar vehículos con estado "EnCampa"
             for vehiculo in data_veh.get('vehiculos', []):
                 estados = vehiculo.get('estado', [])
-                # Si estado es lista y contiene el valor de "EnCampa"
                 if isinstance(estados, list) and 4 in estados:
                     print("Datos brutos del vehículo recibido:")
                     for k, v in vehiculo.items():
@@ -83,10 +72,43 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
 
             # 2. Recuperar PIEZAS
+            headers_pieces = {
+                'apikey': api_key,
+                'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
+                'lastid': str(self.lastid_pieces),
+                'offset': str(self.offset),
+                'idempresa': str(idempresa)
+            }
+
             resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanal',
-                                       headers=headers)
+                                       headers=headers_pieces)
             resp_piezas.raise_for_status()
             data_piezas = resp_piezas.json()
+
+            # Actualizar lastid de piezas si está presente
+            if 'result_set' in data_piezas and 'lastId' in data_piezas['result_set']:
+                nuevo_lastid_pieces = str(data_piezas['result_set']['lastId'])
+                print(f"Nuevo lastid para piezas: {nuevo_lastid_pieces}")
+
+            situacion_map = {
+                0: "En Proceso de Desmontaje",
+                1: "Almacenada",
+                2: "Con Incidencia",
+                3: "En Reparto",
+                4: "En Control de Calidad",
+                5: "Desechada",
+                6: "En Mostrador",
+                7: "Montada Revisada",
+                8: "Vendida",
+                9: "Situación Desconocida"
+            }
+
+            type_material_map = {
+                0: "Revisado",
+                1: "Nuevo",
+                2: "De segunda mano",
+                3: "Reparado",
+            }
 
             for pieza in data_piezas.get('piezas', []):
                 ubicacion = pieza.get('ubicacion', None)
@@ -98,8 +120,25 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     print(f"Pieza {pieza.get('refLocal', 'N/A')} omitida por ubicación: {ubicacion}")
                     stats['pieces']['skipped'] += 1
 
+            # Actualizar los lastid en el wizard actual
+            self.write({
+                'lastid_vehicles': nuevo_lastid_vehicles,
+                'lastid_pieces': nuevo_lastid_pieces,
+            })
+
+            # Crear un nuevo wizard con los valores actualizados para la próxima ejecución
+            self.env['recover.changes.stock.company.metasync.wizard'].create({
+                'fecha': self.fecha,
+                'lastid_vehicles': nuevo_lastid_vehicles,
+                'lastid_pieces': nuevo_lastid_pieces,
+                'offset': self.offset
+            })
+
             # 3. Mostrar resultados
             message = self._generate_results_message(stats)
+            message += f"\n\nÚltimo ID Vehículos: {nuevo_lastid_vehicles}"
+            message += f"\nÚltimo ID Piezas: {nuevo_lastid_pieces}"
+
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',

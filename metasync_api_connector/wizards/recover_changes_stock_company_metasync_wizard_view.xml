@@ -7,11 +7,13 @@
                 <form string="Recuperar Cambios de Almacén con Empresa">
                     <group>
                         <field name="fecha"/>
-                        <field name="lastid"/>
+                        <field name="lastid_vehicles" readonly="1"/>
+                        <field name="lastid_pieces" readonly="1"/>
                         <field name="offset"/>
                     </group>
                     <footer>
-                        <button string="Recuperar Cambios" type="object" name="recuperar_cambios_almacen_empresa_metasync" class="btn-primary"/>
+                        <button string="Recuperar Cambios" type="object"
+                                name="recuperar_cambios_almacen_empresa_metasync" class="btn-primary"/>
                         <button string="Cancelar" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
