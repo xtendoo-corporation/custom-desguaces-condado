@@ -89,8 +89,14 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             data_piezas = resp_piezas.json()
 
             for pieza in data_piezas.get('piezas', []):
-                status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
-                stats['pieces'][status] += 1
+                ubicacion = pieza.get('ubicacion', None)
+                # Solo procesar piezas con ubicación "Almacenada" (valor 1)
+                if ubicacion == 1:
+                    status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
+                    stats['pieces'][status] += 1
+                else:
+                    print(f"Pieza {pieza.get('refLocal', 'N/A')} omitida por ubicación: {ubicacion}")
+                    stats['pieces']['skipped'] += 1
 
             # 3. Mostrar resultados
             message = self._generate_results_message(stats)
