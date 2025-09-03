@@ -2,6 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 import base64
 import requests
+import json
 from datetime import datetime
 
 
@@ -54,6 +55,20 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             resp_veh.raise_for_status()
             data_veh = resp_veh.json()
 
+            print("\n===== ESTRUCTURA COMPLETA DE LA RESPUESTA DE VEHÍCULOS =====")
+            print(json.dumps(data_veh, indent=4, ensure_ascii=False))
+            print("===== FIN DE LA ESTRUCTURA DE RESPUESTA =====\n")
+
+            # También puedes mostrar las secciones principales
+            print(f"Claves principales en la respuesta: {list(data_veh.keys())}")
+            if 'vehiculos' in data_veh:
+                print(f"Número de vehículos recibidos: {len(data_veh['vehiculos'])}")
+            if 'piezas' in data_veh:
+                print(f"Número de piezas recibidas: {len(data_veh['piezas'])}")
+            if 'result_set' in data_veh:
+                print(f"Información de result_set: {data_veh['result_set']}")
+            print("=" * 50)
+
             # Actualizar lastid de vehículos si está presente
             if 'result_set' in data_veh and 'lastId' in data_veh['result_set']:
                 nuevo_lastid_vehicles = str(data_veh['result_set']['lastId'])
@@ -75,44 +90,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 else:
                     print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
 
-            situacion_map = {
-                0: "En Proceso de Desmontaje",
-                1: "Almacenada",
-                2: "Con Incidencia",
-                3: "En Reparto",
-                4: "En Control de Calidad",
-                5: "Desechada",
-                6: "En Mostrador",
-                7: "Montada Revisada",
-                8: "Vendida",
-                9: "Situación Desconocida"
-            }
 
-            type_material_map = {
-                0: "Revisado",
-                1: "Nuevo",
-                2: "De segunda mano",
-                3: "Reparado",
-            }
-
-            for pieza in data_veh.get('piezas', []):
-                # Mostrar toda la información de la pieza
-                print(f"\n--- INFORMACIÓN COMPLETA DE LA PIEZA ---")
-                print(f"Datos brutos de la pieza recibida en respuesta de vehículos:")
-                for k, v in pieza.items():
-                    print(f"  {k}: {v}")
-
-                ubicacion = pieza.get('ubicacion', None)
-                # Solo procesar piezas con ubicación "Almacenada" (valor 1)
-                if ubicacion == 1:
-                    print(f"Procesando pieza {pieza.get('refLocal', 'N/A')} (ubicación: {ubicacion})")
-                    status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
-                    stats['pieces'][status] += 1
-                else:
-                    print(f"Pieza {pieza.get('refLocal', 'N/A')} omitida por ubicación: {ubicacion}")
-                    stats['pieces']['skipped'] += 1
-                print(f"--- FIN INFORMACIÓN DE LA PIEZA ---\n")
-                print("*"*50)
             # 2. Recuperar PIEZAS
             headers_pieces = {
                 'apikey': api_key,
