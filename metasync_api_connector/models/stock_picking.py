@@ -454,7 +454,7 @@ class StockPicking(models.Model):
     @api.model
     def recuperar_conteo_de_piezas_metasync(self):
         api_key = self.obtener_parametros_metasync()
-        fecha = '01/01/2000 21:29:56'
+        fecha = '01/01/2025 00:00:00'
 
         headers = {
             'apiKey': api_key,
@@ -483,7 +483,7 @@ class StockPicking(models.Model):
     @api.model
     def recuperar_conteo_de_vehiculos_metasync(self):
         api_key = self.obtener_parametros_metasync()
-        fecha = '01/01/0001 00:00:00'
+        fecha = '01/01/2025 00:00:00'
 
         headers = {
             'apiKey': api_key,
