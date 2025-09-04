@@ -42,53 +42,53 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
         try:
             # 1. Recuperar VEHÍCULOS
-            headers_vehicles = {
-                'apikey': api_key,
-                'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
-                'lastid': str(self.lastid_vehicles),
-                'offset': str(self.offset),
-                'idempresa': str(idempresa)
-            }
-
-            resp_veh = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal',
-                                    headers=headers_vehicles)
-            resp_veh.raise_for_status()
-            data_veh = resp_veh.json()
-
-            # print("\n===== ESTRUCTURA COMPLETA DE LA RESPUESTA DE VEHÍCULOS =====")
-            # print(json.dumps(data_veh, indent=4, ensure_ascii=False))
-            # print("===== FIN DE LA ESTRUCTURA DE RESPUESTA =====\n")
+            # headers_vehicles = {
+            #     'apikey': api_key,
+            #     'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
+            #     'lastid': str(self.lastid_vehicles),
+            #     'offset': str(self.offset),
+            #     'idempresa': str(idempresa)
+            # }
             #
-            # # También puedes mostrar las secciones principales
-            # print(f"Claves principales en la respuesta: {list(data_veh.keys())}")
-            # if 'vehiculos' in data_veh:
-            #     print(f"Número de vehículos recibidos: {len(data_veh['vehiculos'])}")
-            # if 'piezas' in data_veh:
-            #     print(f"Número de piezas recibidas: {len(data_veh['piezas'])}")
-            # if 'result_set' in data_veh:
-            #     print(f"Información de result_set: {data_veh['result_set']}")
-            # print("=" * 50)
-
-            # Actualizar lastid de vehículos si está presente
-            if 'result_set' in data_veh and 'lastId' in data_veh['result_set']:
-                nuevo_lastid_vehicles = str(data_veh['result_set']['lastId'])
-                print(f"Nuevo lastid para vehículos: {nuevo_lastid_vehicles}")
-
-            # Solo procesar vehículos con estado "EnCampa"
-            for vehiculo in data_veh.get('vehiculos', []):
-                estados = vehiculo.get('estado', [])
-                if isinstance(estados, list) and 4 in estados:
-                    print("Datos brutos del vehículo recibido:")
-                    for k, v in vehiculo.items():
-                        print(f"  {k}: {v}")
-                    vehicle_result, status = self._process_vehicle(vehiculo)
-                    if vehicle_result:
-                        vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
-                        stats['vehicles'][status] += 1
-                    else:
-                        stats['vehicles']['skipped'] += 1
-                else:
-                    print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
+            # resp_veh = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal',
+            #                         headers=headers_vehicles)
+            # resp_veh.raise_for_status()
+            # data_veh = resp_veh.json()
+            #
+            # # print("\n===== ESTRUCTURA COMPLETA DE LA RESPUESTA DE VEHÍCULOS =====")
+            # # print(json.dumps(data_veh, indent=4, ensure_ascii=False))
+            # # print("===== FIN DE LA ESTRUCTURA DE RESPUESTA =====\n")
+            # #
+            # # # También puedes mostrar las secciones principales
+            # # print(f"Claves principales en la respuesta: {list(data_veh.keys())}")
+            # # if 'vehiculos' in data_veh:
+            # #     print(f"Número de vehículos recibidos: {len(data_veh['vehiculos'])}")
+            # # if 'piezas' in data_veh:
+            # #     print(f"Número de piezas recibidas: {len(data_veh['piezas'])}")
+            # # if 'result_set' in data_veh:
+            # #     print(f"Información de result_set: {data_veh['result_set']}")
+            # # print("=" * 50)
+            #
+            # # Actualizar lastid de vehículos si está presente
+            # if 'result_set' in data_veh and 'lastId' in data_veh['result_set']:
+            #     nuevo_lastid_vehicles = str(data_veh['result_set']['lastId'])
+            #     print(f"Nuevo lastid para vehículos: {nuevo_lastid_vehicles}")
+            #
+            # # Solo procesar vehículos con estado "EnCampa"
+            # for vehiculo in data_veh.get('vehiculos', []):
+            #     estados = vehiculo.get('estado', [])
+            #     if isinstance(estados, list) and 4 in estados:
+            #         print("Datos brutos del vehículo recibido:")
+            #         for k, v in vehiculo.items():
+            #             print(f"  {k}: {v}")
+            #         vehicle_result, status = self._process_vehicle(vehiculo)
+            #         if vehicle_result:
+            #             vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
+            #             stats['vehicles'][status] += 1
+            #         else:
+            #             stats['vehicles']['skipped'] += 1
+            #     else:
+            #         print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
 
 
             # 2. Recuperar PIEZAS
@@ -110,6 +110,9 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             print(json.dumps(data_piezas, indent=4, ensure_ascii=False))
             print("===== FIN DE LA ESTRUCTURA DE RESPUESTA DE PIEZAS =====\n")
 
+
+            # Solo procesar vehículos con estado "EnCampa"
+
             # Mostrar información principal de la respuesta
             print(f"Claves principales en la respuesta de piezas: {list(data_piezas.keys())}")
             if 'piezas' in data_piezas:
@@ -126,6 +129,21 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             if 'result_set' in data_piezas and 'lastId' in data_piezas['result_set']:
                 nuevo_lastid_pieces = str(data_piezas['result_set']['lastId'])
                 print(f"Nuevo lastid para piezas: {nuevo_lastid_pieces}")
+
+            for vehiculo in data_piezas.get('vehiculos', []):
+                estados = vehiculo.get('estado', [])
+                if isinstance(estados, list) and 4 in estados:
+                    print("Datos brutos del vehículo recibido:")
+                    for k, v in vehiculo.items():
+                        print(f"  {k}: {v}")
+                    vehicle_result, status = self._process_vehicle(vehiculo)
+                    if vehicle_result:
+                        vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
+                        stats['vehicles'][status] += 1
+                    else:
+                        stats['vehicles']['skipped'] += 1
+                else:
+                    print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
 
             situacion_map = {
                 0: "En Proceso de Desmontaje",
