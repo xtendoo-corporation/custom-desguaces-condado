@@ -11,12 +11,9 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
     _description = 'Recuperar Cambios Stock Company Metasync'
 
     fecha = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
-    lastid_vehicles = fields.Char(string='Last ID Vehículos', required=True,
-                                  default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
-                                      'metasync.lastid_vehicles', '0'))
-    lastid_pieces = fields.Char(string='Last ID Piezas', required=True,
+    lastid = fields.Char(string='Last ID', required=True,
                                 default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
-                                    'metasync.lastid_pieces', '0'))
+                                    'metasync.lastid', '0'))
     offset = fields.Integer(string='Offset', required=True, default=10)
 
     def recuperar_cambios_almacen_empresa_metasync(self):
@@ -37,8 +34,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
         }
 
         vehicles_dict = {}
-        nuevo_lastid_vehicles = self.lastid_vehicles
-        nuevo_lastid_pieces = self.lastid_pieces
+        nuevo_lastid = self.lastid
 
         try:
             # 1. Recuperar VEHÍCULOS
@@ -95,7 +91,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             headers_pieces = {
                 'apikey': api_key,
                 'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
-                'lastid': str(self.lastid_pieces),
+                'lastid': str(self.lastid),
                 'offset': str(self.offset),
                 'idempresa': str(idempresa)
             }
@@ -127,8 +123,8 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
             # Actualizar lastid de piezas si está presente
             if 'result_set' in data_piezas and 'lastId' in data_piezas['result_set']:
-                nuevo_lastid_pieces = str(data_piezas['result_set']['lastId'])
-                print(f"Nuevo lastid para piezas: {nuevo_lastid_pieces}")
+                nuevo_lastid = str(data_piezas['result_set']['lastId'])
+                print(f"Nuevo lastid para piezas: {nuevo_lastid}")
 
             for vehiculo in data_piezas.get('vehiculos', []):
                 estados = vehiculo.get('estado', [])
@@ -177,26 +173,22 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
             # Actualizar los lastid en el wizard actual
             self.write({
-                'lastid_vehicles': nuevo_lastid_vehicles,
-                'lastid_pieces': nuevo_lastid_pieces,
+                'lastid': nuevo_lastid,
             })
 
             # Guardar los valores permanentemente en parámetros del sistema
-            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid_vehicles', nuevo_lastid_vehicles)
-            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid_pieces', nuevo_lastid_pieces)
+            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid', nuevo_lastid)
 
             # Crear un nuevo wizard con los valores actualizados para la próxima ejecución
             self.env['recover.changes.stock.company.metasync.wizard'].create({
                 'fecha': self.fecha,
-                'lastid_vehicles': nuevo_lastid_vehicles,
-                'lastid_pieces': nuevo_lastid_pieces,
+                'lastid': nuevo_lastid,
                 'offset': self.offset
             })
 
             # 3. Mostrar resultados
             message = self._generate_results_message(stats)
-            message += f"\n\nÚltimo ID Vehículos: {nuevo_lastid_vehicles}"
-            message += f"\nÚltimo ID Piezas: {nuevo_lastid_pieces}"
+            message += f"\nÚltimo ID: {nuevo_lastid}"
 
             return {
                 'type': 'ir.actions.client',

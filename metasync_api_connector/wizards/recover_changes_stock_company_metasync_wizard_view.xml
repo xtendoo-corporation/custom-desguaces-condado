@@ -7,8 +7,7 @@
                 <form string="Recuperar Cambios de Almacén con Empresa">
                     <group>
                         <field name="fecha"/>
-                        <field name="lastid_vehicles" readonly="1"/>
-                        <field name="lastid_pieces" readonly="1"/>
+                        <field name="lastid" readonly="1"/>
                         <field name="offset"/>
                     </group>
                     <footer>
