@@ -10,165 +10,204 @@ class RecoverChangesStockMetasyncWizard(models.TransientModel):
     _description = 'Recuperar Cambios Stock Metasync'
 
     fecha = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
-    lastid = fields.Char(string='Last ID', required=True, default="0")
+    lastid = fields.Char(string='Last ID', required=True,
+                         default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
+                             'metasync.lastid_vehicles', '0'))
     offset = fields.Integer(string='Offset', required=True, default=10)
 
     def recuperar_cambios_almacen(self):
+        print("Iniciando recuperación de cambios en el almacén de la empresa Metasync... Wizard")
         self.ensure_one()
+
         api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey', default=None)
         if not api_key:
-            raise UserError(
-                "Por favor, configure el parámetro 'metasync.inventory.apikey' en Ajustes > Parámetros > Parámetros del sistema.")
+            raise UserError("No está bien configurado el parámetro 'metasync.inventory.apikey' o no es correcto.")
 
-        headers = {
-            'apiKey': api_key,
-            'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
-            'lastid': self.lastid,
-            'offset': str(self.offset),
+        idempresa = self.env['ir.config_parameter'].sudo().get_param('metasync.id_empresa', default=None)
+        if not idempresa:
+            raise UserError("No está bien configurado el parámetro 'metasync.id_empresa' o no es correcto.")
+
+        stats = {
+            'vehicles': {'created': 0, 'updated': 0, 'skipped': 0, 'error': 0},
+            'pieces': {'created': 0, 'updated': 0, 'skipped': 0, 'error': 0}
         }
-        situacion_map = {
-            0: "En Proceso de Desmontaje",
-            1: "Almacenada",
-            2: "Con Incidencia",
-            3: "En Reparto",
-            4: "En Control de Calidad",
-            5: "Desechada",
-            6: "En Mostrador",
-            7: "Montada Revisada",
-            8: "Vendida",
-            9: "Situación Desconocida"
-        }
-        type_material_map = {
-            0: "Revisado",
-            1: "Nuevo",
-            2: "De segunda mano",
-            3: "Reparado",
-        }
+
+        vehicles_dict = {}
+        nuevo_lastid = self.lastid
+
         try:
-            response = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanal', headers=headers)
-            response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            # Acceder a las piezas
-            if len(response.json()['piezas']) == 0:
-                print("No hay piezas")
-            else:
-                for pieza in response.json()['piezas']:
-                    print('---')
-                    print(f"ID Empresa: {pieza['idEmpresa']}")
-                    print(f"Referencia local: {pieza['refLocal']}")
-                    print(f"ID Vehículo: {pieza['idVehiculo']}")
-                    print(f"Código Familia: {pieza['codFamilia']}")
-                    print(f"Descripción Familia: {pieza['descripcionFamilia']}")
-                    print(f"Código Artículo: {pieza['codArticulo']}")
-                    print(f"Descripción del artículo: {pieza['descripcionArticulo']}")
-                    print(f"Código Versión: {pieza['codVersion']}")
-                    print(f"Referencia Principal: {pieza['refPrincipal']}")
-                    print(f"Precio: {pieza['precio']}")
-                    print(f"Año Stock: {pieza['anyoStock']}")
-                    print(f"Peso: {pieza['peso']}")
-                    ubicacion_texto = situacion_map.get(pieza['ubicacion'], "Situación Desconocida")
-                    print(f"Ubicación: {ubicacion_texto}")
-                    print(f"Observaciones: {pieza['observaciones']}")
-                    print(f"Reserva: {pieza['reserva']}")
-                    tipo_material_texto = type_material_map.get(pieza['tipoMaterial'], "Tipo Desconocido")
-                    print(f"Tipo Material: {tipo_material_texto}")
-                    print(f"Imagen/es:")
-                    for url in pieza['urlsImgs']:
-                        url = url + ".jpeg"
-                        print(f"- URL: {url}")
-                    # print(f"Fecha de modificación: {pieza['fechaMod']}")
-                    date_str = pieza['fechaMod']
-                    date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
-                    formatted_date = date_obj.strftime('%Y-%m-%d %H:%M:%S')
-                    print(f"Fecha de modificación: {formatted_date}")
-                    print(f"Código Almacén: {pieza['codAlmacen']}")
-                    print('---')
-                    is_product = self.env['product.product'].search([('default_code', '=', pieza['refLocal'])])
-                    if is_product:
-                        print(f"El producto {pieza['descripcionArticulo']} ya existe en la base de datos")
+            headers_pieces = {
+                'apikey': api_key,
+                'fecha': self.fecha.strftime('%d/%m/%Y %H:%M:%S'),
+                'lastid': str(self.lastid),
+                'offset': str(self.offset),
+                'idempresa': str(idempresa)
+            }
+
+            resp_vehicles = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosVehiculosCanal',
+                                         headers=headers_pieces)
+            resp_vehicles.raise_for_status()
+            data_vehicles = resp_vehicles.json()
+
+            if 'result_set' in data_vehicles and 'lastId' in data_vehicles['result_set']:
+                nuevo_lastid = str(data_vehicles['result_set']['lastId'])
+                print(f"Nuevo lastid para piezas: {nuevo_lastid}")
+
+            for vehiculo in data_vehicles.get('vehiculos', []):
+                estados = vehiculo.get('estado', [])
+                if isinstance(estados, list) and 4 in estados:
+                    print("Datos brutos del vehículo recibido:")
+                    for k, v in vehiculo.items():
+                        print(f"  {k}: {v}")
+                    vehicle_result, status = self._process_vehicle(vehiculo)
+                    if vehicle_result:
+                        vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
+                        stats['vehicles'][status] += 1
                     else:
-                        is_category = self.env['product.category'].search([('default_code', '=', pieza['codFamilia'])])
-                        if is_category:
-                            print(f"La categoría {pieza['descripcionFamilia']} ya existe en la base de datos")
-                            category = is_category
-                        else:
-                            print(f"Creando la categoría {pieza['descripcionFamilia']}:")
-                            category = self.env['product.category'].create({
-                                'name': pieza['descripcionFamilia'],
-                                'default_code': pieza['codFamilia'],
-                                'parent_id': 1,
-                            })
-                            print(f"Categoría {category.name} creada")
-                        image_url = pieza['urlsImgs'][0] + ".jpeg"
-                        image_response = requests.get(image_url)
-                        if image_response.status_code == 200:
-                            image_data = base64.b64encode(image_response.content)
-                        else:
-                            image_data = False
-                        print(f"Creando el producto {pieza['descripcionArticulo']}:")
-                        product = self.env['product.product'].create({
-                            'name': pieza['descripcionArticulo'],
-                            'default_code': pieza['refLocal'],
-                            'categ_id': category.id,
-                            'list_price': pieza['precio'] / 1000,
-                            'weight': pieza['peso'],
-                            'image_1920': image_data,
-                            'principal_ref': pieza['refPrincipal'],
-                            'vehicle_id': pieza['idVehiculo'],
-                            'version_code': pieza['codVersion'],
-                            'article_code': pieza['codArticulo'],
-                            'stock_year': pieza['anyoStock'],
-                            'location': ubicacion_texto,
-                            'observations': pieza['observaciones'],
-                            'reserve': pieza['reserva'],
-                            'material_type': tipo_material_texto,
-                            'modification_date': formatted_date,
-                            'cod_almacen': pieza['codAlmacen'],
-                        })
-            # Acceder a los vehículos
-            if len(response.json()['vehiculos']) == 0:
-                print("No hay vehículos")
-            else:
-                for vehiculo in response.json()['vehiculos']:
-                    print('---')
-                    print(f"ID local: {vehiculo['idLocal']}")
-                    print(f"ID Empresa: {vehiculo['idEmpresa']}")
-                    print(f"Fecha de modificación: {vehiculo['fechaMod']}")
-                    print(f"Código: {vehiculo['codigo']}")
-                    print(f"Estado: {vehiculo['estado']}")
-                    print(f"Bastidor: {vehiculo['bastidor']}")
-                    print(f"Matrícula: {vehiculo['matricula']}")
-                    print(f"Color: {vehiculo['color']}")
-                    print(f"Kilometraje: {vehiculo['kilometraje']}")
-                    print(f"Año del vehículo: {vehiculo['anyoVehiculo']}")
-                    print(f"Código Motor: {vehiculo['codigoMotor']}")
-                    print(f"Código Cambio: {vehiculo['codigoCambio']}")
-                    print(f"Observaciones: {vehiculo['observaciones']}")
-                    print(f"Imagen/es:")
-                    for url in vehiculo['urlsImgs']:
-                        print(f"- URL: {url}")
-                    print(f"Código Marca: {vehiculo['codMarca']}")
-                    print(f"Nombre Marca: {vehiculo['nombreMarca']}")
-                    print(f"Código Modelo: {vehiculo['codModelo']}")
-                    print(f"Nombre Modelo: {vehiculo['nombreModelo']}")
-                    print(f"Código Versión: {vehiculo['codVersion']}")
-                    print(f"Nombre Versión: {vehiculo['nombreVersion']}")
-                    print(f"Tipo Versión: {vehiculo['tipoVersion']}")
-                    print(f"Combustible: {vehiculo['combustible']}")
-                    print(f"Puertas: {vehiculo['puertas']}")
-                    print(f"Año Inicio: {vehiculo['anyoInicio']}")
-                    print(f"Año Fin: {vehiculo['anyoFin']}")
-                    print(f"Tipos Motor: {vehiculo['tiposMotor']}")
-                    print(f"Potencia HP: {vehiculo['potenciaHP']}")
-                    print(f"Potencia KW: {vehiculo['potenciaKw']}")
-                    print(f"Cilindrada: {vehiculo['cilindrada']}")
-                    print(f"Transmisión: {vehiculo['transmision']}")
-                    print(f"Alimentación: {vehiculo['alimentacion']}")
-                    print(f"Número de marchas: {vehiculo['numMarchas']}")
-                    print(f"RV Code: {vehiculo['rvCode']}")
-                    print(f"K Type: {vehiculo['ktype']}")
-                    print('---')
-            print("*" * 80)
-            
-            return response.json()
+                        stats['vehicles']['skipped'] += 1
+                else:
+                    print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
+
+            self.write({
+                'lastid': nuevo_lastid,
+            })
+
+            # Guardar los valores permanentemente en parámetros del sistema
+            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid', nuevo_lastid)
+
+            # 3. Mostrar resultados
+            message = self._generate_results_message(stats)
+            message += f"\nÚltimo ID: {nuevo_lastid}"
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Proceso Completado',
+                    'message': message,
+                    'type': 'success',
+                    'sticky': True
+                }
+            }
         except requests.exceptions.RequestException as e:
             raise UserError(f"Error al realizar la solicitud: {e}")
+        except Exception as e:
+            raise UserError(f"Error inesperado: {e}")
+
+    def _process_vehicle(self, vehiculo_data):
+        """Procesa un vehículo y devuelve el registro y el estado"""
+        print("Procesa un vehículo y devuelve el registro y el estado Wizard:")
+        id_local = vehiculo_data.get('idLocal')
+        if not id_local:
+            print("Vehículo sin ID local, saltando...")
+            return None, 'skipped'
+
+        existing_vehicle = self.env['product.vehicle'].search([
+            ('id_local', '=', str(id_local))
+        ], limit=1)
+
+        # Helpers seguros
+        def safe_int(val):
+            try:
+                return int(val) if val not in (None, '', False) else 0
+            except (ValueError, TypeError):
+                return 0
+
+        def safe_float(val):
+            try:
+                return float(val) if val not in (None, '', False) else 0.0
+            except (ValueError, TypeError):
+                return 0.0
+
+        # Construir nombre
+        nombre_marca = vehiculo_data.get('nombreMarca', '')
+        nombre_modelo = vehiculo_data.get('nombreModelo', '')
+        nombre_version = vehiculo_data.get('nombreVersion', '')
+        vehicle_name = f"{nombre_marca} {nombre_modelo} {nombre_version}".strip()
+        if not vehicle_name:
+            vehicle_name = f"Vehículo {id_local}"
+
+        # Valores básicos
+        vehicle_vals = {
+            'name': vehicle_name,
+            'id_local': str(id_local),
+            'id_empresa': str(vehiculo_data.get('idEmpresa', '')),
+            'codigo': vehiculo_data.get('codigo', ''),
+            'estado': vehiculo_data.get('estado', ''),
+            'bastidor': vehiculo_data.get('bastidor', ''),
+            'matricula': vehiculo_data.get('matricula', ''),
+            'color': vehiculo_data.get('color', ''),
+            'kilometraje': safe_int(vehiculo_data.get('kilometraje')),
+            'anyo_vehiculo': safe_int(vehiculo_data.get('anyoVehiculo')),
+            'codigo_motor': vehiculo_data.get('codigoMotor', ''),
+            'codigo_cambio': vehiculo_data.get('codigoCambio', ''),
+            'observaciones': vehiculo_data.get('observaciones', ''),
+            'cod_marca': vehiculo_data.get('codMarca', ''),
+            'nombre_marca': nombre_marca,
+            'cod_modelo': vehiculo_data.get('codModelo', ''),
+            'nombre_modelo': nombre_modelo,
+            'cod_version': vehiculo_data.get('codVersion', ''),
+            'nombre_version': nombre_version,
+            'tipo_version': vehiculo_data.get('tipoVersion', ''),
+            'combustible': vehiculo_data.get('combustible', ''),
+            'puertas': safe_int(vehiculo_data.get('puertas')),
+            'anyo_inicio': safe_int(vehiculo_data.get('anyoInicio')),
+            'anyo_fin': safe_int(vehiculo_data.get('anyoFin')),
+            'tipos_motor': vehiculo_data.get('tiposMotor', ''),
+            'potencia_hp': safe_float(vehiculo_data.get('potenciaHP')),
+            'potencia_kw': safe_float(vehiculo_data.get('potenciaKw')),
+            'cilindrada': safe_int(vehiculo_data.get('cilindrada')),
+            'transmision': vehiculo_data.get('transmision', ''),
+            'alimentacion': vehiculo_data.get('alimentacion', ''),
+            'num_marchas': safe_int(vehiculo_data.get('numMarchas')),
+            'rv_code': vehiculo_data.get('rvCode', ''),
+            'ktype': vehiculo_data.get('ktype', ''),
+            'website_published': True,
+        }
+
+        # Manejar fecha de modificación
+        fecha_str = vehiculo_data.get('fechaMod')
+        if fecha_str:
+            for fmt in ('%Y-%m-%dT%H:%M:%S', '%d/%m/%Y %H:%M:%S'):
+                try:
+                    vehicle_vals['fecha_mod'] = datetime.strptime(fecha_str, fmt)
+                    break
+                except Exception:
+                    continue
+            else:
+                print(f"Error convirtiendo fechaMod: {fecha_str}")
+
+        # Procesar imágenes
+        urls_imgs = vehiculo_data.get('urlsImgs', [])
+        if existing_vehicle:
+            # Si actualizamos, primero limpiamos las antiguas
+            existing_vehicle.image_ids.unlink()
+        if urls_imgs:
+            image_vals = [
+                (0, 0, {
+                    'url': url,
+                    'sequence': i
+                }) for i, url in enumerate(urls_imgs, start=1)
+            ]
+            vehicle_vals['image_ids'] = image_vals
+
+        vehicle_vals['urls_imgs'] = '\n'.join(urls_imgs) if urls_imgs else ''
+
+        # Debug
+        print("Datos del vehículo a procesar:")
+        for key, value in vehicle_vals.items():
+            print(f"  {key}: {value}")
+
+        # Crear o actualizar
+        try:
+            if existing_vehicle:
+                print(f"Actualizando vehículo ID {id_local}")
+                existing_vehicle.write(vehicle_vals)
+                return existing_vehicle, 'updated'
+            else:
+                print(f"Creando nuevo vehículo ID {id_local}")
+                new_vehicle = self.env['product.vehicle'].create(vehicle_vals)
+                return new_vehicle, 'created'
+        except Exception as e:
+            print(f"Error procesando vehículo {id_local}: {str(e)}")
+            return None, 'error'
