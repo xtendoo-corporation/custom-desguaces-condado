@@ -102,24 +102,24 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             data_piezas = resp_piezas.json()
 
             # Mostrar la estructura completa de la respuesta de piezas
-            print("\n===== ESTRUCTURA COMPLETA DE LA RESPUESTA DE PIEZAS =====")
-            print(json.dumps(data_piezas, indent=4, ensure_ascii=False))
-            print("===== FIN DE LA ESTRUCTURA DE RESPUESTA DE PIEZAS =====\n")
+            # print("\n===== ESTRUCTURA COMPLETA DE LA RESPUESTA DE PIEZAS =====")
+            # print(json.dumps(data_piezas, indent=4, ensure_ascii=False))
+            # print("===== FIN DE LA ESTRUCTURA DE RESPUESTA DE PIEZAS =====\n")
 
 
             # Solo procesar vehículos con estado "EnCampa"
 
             # Mostrar información principal de la respuesta
-            print(f"Claves principales en la respuesta de piezas: {list(data_piezas.keys())}")
-            if 'piezas' in data_piezas:
-                print(f"Número de piezas recibidas: {len(data_piezas['piezas'])}")
-                if data_piezas['piezas']:
-                    print(f"Ejemplo de primera pieza:")
-                    for k, v in data_piezas['piezas'][0].items():
-                        print(f"  {k}: {v}")
-            if 'result_set' in data_piezas:
-                print(f"Información de result_set: {data_piezas['result_set']}")
-            print("=" * 50)
+            # print(f"Claves principales en la respuesta de piezas: {list(data_piezas.keys())}")
+            # if 'piezas' in data_piezas:
+            #     print(f"Número de piezas recibidas: {len(data_piezas['piezas'])}")
+            #     if data_piezas['piezas']:
+            #         print(f"Ejemplo de primera pieza:")
+            #         for k, v in data_piezas['piezas'][0].items():
+            #             print(f"  {k}: {v}")
+            # if 'result_set' in data_piezas:
+            #     print(f"Información de result_set: {data_piezas['result_set']}")
+            # print("=" * 50)
 
             # Actualizar lastid de piezas si está presente
             if 'result_set' in data_piezas and 'lastId' in data_piezas['result_set']:
@@ -178,13 +178,6 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
             # Guardar los valores permanentemente en parámetros del sistema
             self.env['ir.config_parameter'].sudo().set_param('metasync.lastid', nuevo_lastid)
-
-            # Crear un nuevo wizard con los valores actualizados para la próxima ejecución
-            self.env['recover.changes.stock.company.metasync.wizard'].create({
-                'fecha': self.fecha,
-                'lastid': nuevo_lastid,
-                'offset': self.offset
-            })
 
             # 3. Mostrar resultados
             message = self._generate_results_message(stats)
@@ -326,14 +319,14 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
     def _process_piece(self, pieza, situacion_map, type_material_map, vehicles_dict):
         """Procesa una pieza y devuelve el estado de la operación"""
-        print("Procesa una pieza y devuelve el estado de la operación Wizard:")
+        # print("Procesa una pieza y devuelve el estado de la operación Wizard:")
         try:
             # Validar datos mínimos
             ref_local = pieza.get('refLocal', '')
             descripcion = pieza.get('descripcionArticulo', '')
 
             if not ref_local or not descripcion:
-                print("Pieza sin referencia local o descripción, saltando...")
+                # print("Pieza sin referencia local o descripción, saltando...")
                 return 'skipped'
 
             # Obtener imagen
@@ -372,11 +365,11 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     pass
 
             # Buscar vehículo relacionado
-            print("Buscando vehículo relacionado para la pieza...")
-            print(f"ID Vehículo en pieza: {pieza.get('idVehiculo')}")
-            print("Datos completos de la pieza recibida:")
-            for k, v in pieza.items():
-                print(f"  {k}: {v}")
+            # print("Buscando vehículo relacionado para la pieza...")
+            # print(f"ID Vehículo en pieza: {pieza.get('idVehiculo')}")
+            # print("Datos completos de la pieza recibida:")
+            # for k, v in pieza.items():
+            #     print(f"  {k}: {v}")
             vehicle_id = None
             id_vehiculo = str(pieza.get('idVehiculo', ''))
             if id_vehiculo and id_vehiculo != '0':
