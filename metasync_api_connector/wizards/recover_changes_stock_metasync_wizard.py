@@ -211,3 +211,43 @@ class RecoverChangesStockMetasyncWizard(models.TransientModel):
         except Exception as e:
             print(f"Error procesando vehículo {id_local}: {str(e)}")
             return None, 'error'
+
+
+    def _generate_results_message(self, stats):
+        """Genera el mensaje de resultados con estadísticas"""
+        # Estadísticas de vehículos
+        v_created = stats['vehicles']['created']
+        v_updated = stats['vehicles']['updated']
+        v_skipped = stats['vehicles']['skipped']
+        v_error = stats['vehicles']['error']
+        v_total = v_created + v_updated + v_skipped + v_error
+
+        # Estadísticas de piezas
+        p_created = stats['pieces']['created']
+        p_updated = stats['pieces']['updated']
+        p_skipped = stats['pieces']['skipped']
+        p_error = stats['pieces']['error']
+        p_total = p_created + p_updated + p_skipped + p_error
+
+        # Construir mensaje
+        message = f"""
+           Resumen del Procesamiento:
+
+              (1) Vehículos: Total procesados: {v_total}, creados: {v_created}, actualizados: {v_updated}, omitidos: {v_skipped} y errores: {v_error};
+              (2) Piezas: Total procesadas: {p_total}, creadas: {p_created}, actualizadas: {p_updated}, omitidas: {p_skipped} y errores: {p_error};
+              (3) Relaciones: Piezas relacionadas con vehículos: {p_created + p_updated - p_skipped}.
+           """
+
+        return message
+
+
+    @staticmethod
+    def fetch_image(url):
+        """Obtiene imagen desde URL"""
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return base64.b64encode(response.content)
+        except requests.exceptions.RequestException as e:
+            print(f"Error obteniendo imagen: {e}")
+            return None
