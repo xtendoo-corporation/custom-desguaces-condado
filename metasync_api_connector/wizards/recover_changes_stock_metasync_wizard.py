@@ -51,7 +51,7 @@ class RecoverChangesStockMetasyncWizard(models.TransientModel):
 
             if 'result_set' in data_vehicles and 'lastId' in data_vehicles['result_set']:
                 nuevo_lastid = str(data_vehicles['result_set']['lastId'])
-                print(f"Nuevo lastid para piezas: {nuevo_lastid}")
+                print(f"Nuevo lastid para vehiculos: {nuevo_lastid}")
 
             for vehiculo in data_vehicles.get('vehiculos', []):
                 estados = vehiculo.get('estado', [])
@@ -73,7 +73,7 @@ class RecoverChangesStockMetasyncWizard(models.TransientModel):
             })
 
             # Guardar los valores permanentemente en parámetros del sistema
-            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid', nuevo_lastid)
+            self.env['ir.config_parameter'].sudo().set_param('metasync.lastid_vehicles', nuevo_lastid)
 
             # 3. Mostrar resultados
             message = self._generate_results_message(stats)
