@@ -47,7 +47,7 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 'idempresa': str(idempresa)
             }
 
-            resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanal',
+            resp_piezas = requests.get('https://apis.metasync.com/Almacen/RecuperarCambiosCanalEmpresa2',
                                        headers=headers_pieces)
             resp_piezas.raise_for_status()
             data_piezas = resp_piezas.json()
