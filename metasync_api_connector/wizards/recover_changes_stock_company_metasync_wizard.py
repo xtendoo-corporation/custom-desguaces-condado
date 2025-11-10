@@ -17,7 +17,6 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
     offset = fields.Integer(string='Offset', required=True, default=10)
 
     def recuperar_cambios_almacen_empresa_metasync(self):
-        print("Iniciando recuperación de cambios en el almacén de la empresa Metasync... Wizard")
         self.ensure_one()
 
         api_key = self.env['ir.config_parameter'].sudo().get_param('metasync.inventory.apikey', default=None)
@@ -52,17 +51,29 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             resp_piezas.raise_for_status()
             data_piezas = resp_piezas.json()
 
+            # Imprimir la respuesta JSON completa
+            print("=" * 80)
+            print("RESPUESTA JSON COMPLETA DE LA API:")
+            print("=" * 80)
+            print(json.dumps(data_piezas, indent=2, ensure_ascii=False))
+            print("=" * 80)
+
             # Actualizar lastid de piezas si está presente
             if 'result_set' in data_piezas and 'lastId' in data_piezas['result_set']:
                 nuevo_lastid = str(data_piezas['result_set']['lastId'])
-                print(f"Nuevo lastid para piezas: {nuevo_lastid}")
 
-            for vehiculo in data_piezas.get('vehiculos', []):
+            # Procesar vehículos
+            total_vehiculos = len(data_piezas.get('vehiculos', []))
+            print(f"\n{'='*80}")
+            print(f"PROCESAMIENTO DE VEHÍCULOS - Total recibidos: {total_vehiculos}")
+            print(f"{'='*80}")
+
+            for idx, vehiculo in enumerate(data_piezas.get('vehiculos', []), 1):
+                id_local = vehiculo.get('idLocal', 'N/A')
                 estados = vehiculo.get('estado', [])
+                print(f"[VEHICLE {idx}/{total_vehiculos}] ID Local: {id_local} - Estados: {estados} - Tipo: {type(estados)}")
+
                 if isinstance(estados, list) and 4 in estados:
-                    print("Datos brutos del vehículo recibido:")
-                    for k, v in vehiculo.items():
-                        print(f"  {k}: {v}")
                     vehicle_result, status = self._process_vehicle(vehiculo)
                     if vehicle_result:
                         vehicles_dict[str(vehiculo['idLocal'])] = vehicle_result
@@ -70,7 +81,12 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     else:
                         stats['vehicles']['skipped'] += 1
                 else:
-                    print(f"Vehículo {vehiculo.get('idLocal')} omitido por estado: {estados}")
+                    print(f"[VEHICLE {idx}/{total_vehiculos}] ⚠️ OMITIDO - No cumple filtro de estado 4")
+                    stats['vehicles']['skipped'] += 1
+
+            print(f"{'='*80}")
+            print(f"VEHÍCULOS PROCESADOS: {len(vehicles_dict)} de {total_vehiculos}")
+            print(f"{'='*80}\n")
 
             situacion_map = {
                 0: "En Proceso de Desmontaje",
@@ -92,15 +108,32 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 3: "Reparado",
             }
 
-            for pieza in data_piezas.get('piezas', []):
+            # Procesar piezas
+            total_piezas = len(data_piezas.get('piezas', []))
+            piezas_almacenadas = 0
+            print(f"\n{'='*80}")
+            print(f"PROCESAMIENTO DE PIEZAS - Total recibidas: {total_piezas}")
+            print(f"{'='*80}")
+
+            for idx, pieza in enumerate(data_piezas.get('piezas', []), 1):
                 ubicacion = pieza.get('ubicacion', None)
+                ref_local = pieza.get('refLocal', 'N/A')
+
                 # Solo procesar piezas con ubicación "Almacenada" (valor 1)
                 if ubicacion == 1:
+                    piezas_almacenadas += 1
+                    if piezas_almacenadas <= 5 or piezas_almacenadas == total_piezas:  # Mostrar las primeras 5 y la última
+                        print(f"[PIECE {idx}/{total_piezas}] Procesando pieza almacenada: {ref_local}")
                     status = self._process_piece(pieza, situacion_map, type_material_map, vehicles_dict)
                     stats['pieces'][status] += 1
                 else:
-                    print(f"Pieza {pieza.get('refLocal', 'N/A')} omitida por ubicación: {ubicacion}")
+                    if idx <= 3:  # Solo mostrar las primeras 3 omitidas
+                        print(f"[PIECE {idx}/{total_piezas}] ⚠️ OMITIDA - Ref: {ref_local} - Ubicación: {ubicacion} (no almacenada)")
                     stats['pieces']['skipped'] += 1
+
+            print(f"{'='*80}")
+            print(f"PIEZAS PROCESADAS: {piezas_almacenadas} almacenadas de {total_piezas} totales")
+            print(f"{'='*80}\n")
 
             # Actualizar los lastid en el wizard actual
             self.write({
@@ -132,15 +165,19 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
     def _process_vehicle(self, vehiculo_data):
         """Procesa un vehículo y devuelve el registro y el estado"""
-        print("Procesa un vehículo y devuelve el registro y el estado Wizard:")
         id_local = vehiculo_data.get('idLocal')
         if not id_local:
-            print("Vehículo sin ID local, saltando...")
+            print(f"[VEHICLE] ❌ SKIPPED - Sin ID Local")
             return None, 'skipped'
 
         existing_vehicle = self.env['product.vehicle'].search([
             ('id_local', '=', str(id_local))
         ], limit=1)
+
+        if existing_vehicle:
+            print(f"[VEHICLE] 🔄 EXISTE - ID Local: {id_local} - Actualizando...")
+        else:
+            print(f"[VEHICLE] ✨ NUEVO - ID Local: {id_local} - Creando...")
 
         # Helpers seguros
         def safe_int(val):
@@ -210,8 +247,6 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     break
                 except Exception:
                     continue
-            else:
-                print(f"Error convirtiendo fechaMod: {fecha_str}")
 
         # Procesar imágenes
         urls_imgs = vehiculo_data.get('urlsImgs', [])
@@ -229,36 +264,33 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
 
         vehicle_vals['urls_imgs'] = '\n'.join(urls_imgs) if urls_imgs else ''
 
-        # Debug
-        print("Datos del vehículo a procesar:")
-        for key, value in vehicle_vals.items():
-            print(f"  {key}: {value}")
-
         # Crear o actualizar
         try:
             if existing_vehicle:
-                print(f"Actualizando vehículo ID {id_local}")
                 existing_vehicle.write(vehicle_vals)
+                print(f"[VEHICLE] ✅ ACTUALIZADO - ID Local: {id_local} - Nombre: {vehicle_name}")
                 return existing_vehicle, 'updated'
             else:
-                print(f"Creando nuevo vehículo ID {id_local}")
                 new_vehicle = self.env['product.vehicle'].create(vehicle_vals)
+                print(f"[VEHICLE] ✅ CREADO - ID Local: {id_local} - Nombre: {vehicle_name}")
                 return new_vehicle, 'created'
         except Exception as e:
-            print(f"Error procesando vehículo {id_local}: {str(e)}")
+            print(f"[VEHICLE] ❌ ERROR - ID Local: {id_local} - Error: {str(e)}")
             return None, 'error'
 
     def _process_piece(self, pieza, situacion_map, type_material_map, vehicles_dict):
         """Procesa una pieza y devuelve el estado de la operación"""
-        # print("Procesa una pieza y devuelve el estado de la operación Wizard:")
+        ref_local = ''
         try:
             # Validar datos mínimos
             ref_local = pieza.get('refLocal', '')
             descripcion = pieza.get('descripcionArticulo', '')
 
             if not ref_local or not descripcion:
-                # print("Pieza sin referencia local o descripción, saltando...")
+                print(f"[PIECE] ❌ SKIPPED - Sin ref_local o descripción - Ref: {ref_local}")
                 return 'skipped'
+
+            print(f"[PIECE] 🔍 PROCESANDO - Ref: {ref_local} - {descripcion[:50]}...")
 
             # Obtener imagen
             image_data = None
@@ -296,20 +328,15 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                     pass
 
             # Buscar vehículo relacionado
-            # print("Buscando vehículo relacionado para la pieza...")
-            # print(f"ID Vehículo en pieza: {pieza.get('idVehiculo')}")
-            # print("Datos completos de la pieza recibida:")
-            # for k, v in pieza.items():
-            #     print(f"  {k}: {v}")
             vehicle_id = None
             id_vehiculo = str(pieza.get('idVehiculo', ''))
             if id_vehiculo and id_vehiculo != '0':
                 vehicle = vehicles_dict.get(id_vehiculo)
                 if vehicle:
                     vehicle_id = vehicle.id
-                    print(f"Relacionando pieza con vehículo ID {id_vehiculo}")
+                    print(f"[PIECE] 🚗 RELACIÓN - Ref: {ref_local} vinculada al vehículo ID Local: {id_vehiculo}")
                 else:
-                    print(f"Vehículo ID {id_vehiculo} no encontrado para pieza {ref_local}")
+                    print(f"[PIECE] ⚠️ ADVERTENCIA - Ref: {ref_local} - Vehículo ID Local: {id_vehiculo} no encontrado")
 
             # Buscar o crear categoría
             category = self._get_or_create_category(pieza)
@@ -318,6 +345,11 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             product = self.env['product.template'].search([
                 ('default_code', '=', ref_local)
             ], limit=1)
+
+            if product:
+                print(f"[PIECE] 🔄 EXISTE - Ref: {ref_local} - Actualizando...")
+            else:
+                print(f"[PIECE] ✨ NUEVO - Ref: {ref_local} - Creando...")
 
             # Preparar valores
             vals = {
@@ -344,20 +376,20 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             }
 
             if product:
-                print(f"Actualizando pieza {ref_local} - {descripcion}")
                 product.product_image_ids.unlink()
                 product.write(vals)
+                print(f"[PIECE] ✅ ACTUALIZADA - Ref: {ref_local} - {descripcion[:50]}")
                 return 'updated'
             else:
-                print(f"Creando pieza {ref_local} - {descripcion}")
                 # Crear categorías públicas
                 public_categ_ids = self._get_or_create_public_categories(pieza)
                 vals['public_categ_ids'] = [(6, 0, public_categ_ids)]
                 self.env['product.template'].create(vals)
+                print(f"[PIECE] ✅ CREADA - Ref: {ref_local} - {descripcion[:50]}")
                 return 'created'
 
         except Exception as e:
-            print(f"Error procesando pieza {pieza.get('refLocal', 'N/A')}: {str(e)}")
+            print(f"[PIECE] ❌ ERROR - Ref: {ref_local} - Error: {str(e)}")
             return 'error'
 
     def _get_or_create_category(self, pieza):
@@ -378,7 +410,6 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
                 'default_code': cod_familia,
                 'parent_id': self.env.ref('product.product_category_1').id,
             })
-            print(f"Categoría creada: {desc_familia}")
 
         return category
 
@@ -448,5 +479,4 @@ class RecoverChangesStockCompanyMetasyncWizard(models.TransientModel):
             response.raise_for_status()
             return base64.b64encode(response.content)
         except requests.exceptions.RequestException as e:
-            print(f"Error obteniendo imagen: {e}")
             return None
